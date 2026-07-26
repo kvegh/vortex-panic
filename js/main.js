@@ -100,7 +100,7 @@ document.getElementById('step-fwd').addEventListener('click', () => {
 document.getElementById('step-back').addEventListener('click', () => {
     const traveled = Math.abs(ship.position - autopilot.startPos);
     const pct = autopilot.totalDist > 0 ? (traveled / autopilot.totalDist) * 100 : 0;
-    const target = Math.max(0, Math.floor(pct / 10 - 0.001) * 10);
+    const target = Math.max(0, Math.floor(pct / 10 - 0.001) * 10 - 10);
     stepToPercent(target);
 });
 
