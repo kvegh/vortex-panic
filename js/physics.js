@@ -42,7 +42,8 @@ export function flightStateAtFraction(fraction, totalDist, accel, totalMass, dry
 
     const S = a * d / (C * C);
     const gamma = S + 1;
-    const v = (S > 0) ? C * Math.sqrt(1 - 1 / (gamma * gamma)) : 0;
+    const maxV = C * 0.9999999;
+    const v = (S > 0) ? Math.min(maxV, C * Math.sqrt(1 - 1 / (gamma * gamma))) : 0;
     const t_d = (S > 0) ? (C / a) * Math.sqrt(S * S + 2 * S) : 0;
     const tau_d = (S > 0) ? (C / a) * Math.acosh(S + 1) : 0;
 

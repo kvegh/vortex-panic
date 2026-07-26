@@ -1,4 +1,4 @@
-import { BODIES, SHIP_DEFAULTS } from './constants.js';
+import { C, BODIES, SHIP_DEFAULTS } from './constants.js';
 import { Ship } from './ship.js';
 import { Renderer } from './renderer.js';
 import { UI } from './ui.js';
@@ -18,13 +18,13 @@ ui.setLog(log);
 
 let paused = false;
 
-log.add('[0s] VORTEX PANIC v8 — Parked on Earth surface');
+log.add('[0s] VORTEX PANIC v9 — Parked on Earth surface');
 
 ui.onReset = () => {
     ship.reset();
     autopilot.disengage();
     log.clear();
-    log.add('[0s] VORTEX PANIC v8 — Parked on Earth surface');
+    log.add('[0s] VORTEX PANIC v9 — Parked on Earth surface');
     document.getElementById('ap-btn').textContent = 'AUTOPILOT';
     document.getElementById('ap-btn').classList.remove('ap-on');
     paused = false;
@@ -78,7 +78,8 @@ function stepToPercent(targetPct) {
     }
 
     log.lastProgressMilestone = Math.floor(fraction * 10) - 1;
-    log.lastSpeedBracket = -1;
+    const vFrac = Math.abs(ship.velocity) / C;
+    log.lastSpeedBracket = vFrac < 0.001 ? 0 : vFrac < 0.01 ? 1 : vFrac < 0.1 ? 2 : vFrac < 0.5 ? 3 : vFrac < 0.9 ? 4 : vFrac < 0.99 ? 5 : 6;
 
     if (!paused) {
         paused = true;
@@ -118,7 +119,9 @@ document.getElementById('log-snap').addEventListener('click', () => {
 document.getElementById('log-toggle').addEventListener('click', () => {
     const panel = document.getElementById('log-panel');
     panel.classList.toggle('hidden');
-    document.getElementById('log-toggle').textContent = panel.classList.contains('hidden') ? 'SHOW' : 'HIDE';
+    const hidden = panel.classList.contains('hidden');
+    document.getElementById('log-toggle').textContent = hidden ? 'SHOW' : 'HIDE';
+    log.logUI(hidden ? 'Log HIDDEN' : 'Log SHOWN');
 });
 
 document.getElementById('ap-btn').addEventListener('click', () => {

@@ -55,7 +55,7 @@ export class UI {
 
     update(ship) {
         const spd = Math.abs(ship.velocity);
-        document.getElementById('speed-c').textContent = (spd / C).toFixed(6) + ' c';
+        document.getElementById('speed-c').textContent = Math.min(spd / C, 0.999999).toFixed(6) + ' c';
         document.getElementById('speed-kms').textContent = this.fmtNum(spd / 1000) + ' km/s';
         document.getElementById('speed-kmh').textContent = this.fmtNum(spd * 3.6) + ' km/h';
         document.getElementById('gamma').textContent = 'γ = ' + ship.gamma.toFixed(4);

@@ -18,7 +18,7 @@ export class FlightLog {
 
     posTag() {
         if (!this.ship) return '';
-        return ` @${this.fmtDist(this.ship.position)} v=${(Math.abs(this.ship.velocity)/C).toFixed(6)}c`;
+        return ` @${this.fmtDist(this.ship.position)} v=${Math.min(Math.abs(this.ship.velocity)/C, 0.999999).toFixed(6)}c`;
     }
 
     nearestBody() {
@@ -79,7 +79,7 @@ export class FlightLog {
         const speedBracket = v < 0.001 ? 0 : v < 0.01 ? 1 : v < 0.1 ? 2 : v < 0.5 ? 3 : v < 0.9 ? 4 : v < 0.99 ? 5 : 6;
         if (speedBracket !== this.lastSpeedBracket && speedBracket > 0) {
             const labels = ['', '0.1%c', '1%c', '10%c', '50%c', '90%c', '99%c'];
-            this.add(`[${t}] MILESTONE: ${labels[speedBracket]} (${v.toFixed(6)}c) γ=${ship.gamma.toFixed(3)} @${this.fmtDist(pos)}`);
+            this.add(`[${t}] MILESTONE: ${labels[speedBracket]} (${Math.min(v, 0.999999).toFixed(6)}c) γ=${ship.gamma.toFixed(3)} @${this.fmtDist(pos)}`);
             this.lastSpeedBracket = speedBracket;
         }
 
@@ -88,7 +88,7 @@ export class FlightLog {
             const label = phaseLabels[autopilot.phase] || autopilot.phase;
             const target = autopilot.target ? autopilot.target.name : '?';
             const targetDist = autopilot.target ? this.fmtDist(Math.abs(autopilot.target.position - pos)) : '?';
-            this.add(`[${t}] AP: ${label} → ${target} (dist=${targetDist}) v=${v.toFixed(6)}c @${this.fmtDist(pos)}`);
+            this.add(`[${t}] AP: ${label} → ${target} (dist=${targetDist}) v=${Math.min(v, 0.999999).toFixed(6)}c @${this.fmtDist(pos)}`);
             this.lastPhase = autopilot.phase;
         }
 
@@ -96,7 +96,7 @@ export class FlightLog {
             const dist = Math.abs(body.position - pos);
             const key = body.name;
             if (dist < body.radius * 5 && dist > 0 && !this.loggedBodies.has(key + '_near')) {
-                this.add(`[${t}] APPROACH: ${body.name} dist=${this.fmtDist(dist)} v=${v.toFixed(6)}c @${this.fmtDist(pos)}`);
+                this.add(`[${t}] APPROACH: ${body.name} dist=${this.fmtDist(dist)} v=${Math.min(v, 0.999999).toFixed(6)}c @${this.fmtDist(pos)}`);
                 this.loggedBodies.add(key + '_near');
             }
             if (dist > body.radius * 10 && this.loggedBodies.has(key + '_near') && !this.loggedBodies.has(key + '_passed')) {
@@ -119,13 +119,13 @@ export class FlightLog {
                 const distTarget = autopilot.target ? Math.abs(autopilot.target.position - pos) : 0;
                 const dil = ship.coordinateTime > 1 ? (ship.coordinateTime / ship.properTime).toFixed(3) : '1.000';
                 const targetName = autopilot.target ? autopilot.target.name : '?';
-                this.add(`[${t}] ▸ ${pct}% — v=${v.toFixed(6)}c γ=${ship.gamma.toFixed(4)} G=${(ship.thrustLevel/g0).toFixed(1)} Fuel=${(ship.fuelFraction*100).toFixed(1)}% | Ship=${this.fmtTime(ship.properTime)} Earth=${this.fmtTime(ship.coordinateTime)} Dil=${dil}x | To ${targetName}: ${this.fmtDist(distTarget)}`);
+                this.add(`[${t}] ▸ ${pct}% — v=${Math.min(v, 0.999999).toFixed(6)}c γ=${ship.gamma.toFixed(4)} G=${(ship.thrustLevel/g0).toFixed(1)} Fuel=${(ship.fuelFraction*100).toFixed(1)}% | Ship=${this.fmtTime(ship.properTime)} Earth=${this.fmtTime(ship.coordinateTime)} Dil=${dil}x | To ${targetName}: ${this.fmtDist(distTarget)}`);
                 this.lastProgressMilestone = progressBracket;
             }
         }
 
         if (!ship.hasFuel && !this.loggedBodies.has('_nofuel')) {
-            this.add(`[${t}] *** FUEL EXHAUSTED *** v=${v.toFixed(6)}c γ=${ship.gamma.toFixed(3)} @${this.fmtDist(pos)}`);
+            this.add(`[${t}] *** FUEL EXHAUSTED *** v=${Math.min(v, 0.999999).toFixed(6)}c γ=${ship.gamma.toFixed(3)} @${this.fmtDist(pos)}`);
             this.loggedBodies.add('_nofuel');
         }
     }
@@ -137,7 +137,7 @@ export class FlightLog {
         const lines = [
             '=== FLIGHT LOG SNAPSHOT ===',
             `Position: ${this.fmtDist(pos)} from Earth (${pos.toExponential(4)} m)`,
-            `Velocity: ${v.toFixed(9)}c (${(Math.abs(ship.velocity)/1000).toFixed(1)} km/s)`,
+            `Velocity: ${Math.min(v, 0.999999999).toFixed(9)}c (${(Math.min(Math.abs(ship.velocity), C * 0.9999999)/1000).toFixed(1)} km/s)`,
             `Gamma: ${ship.gamma.toFixed(6)}`,
             `Proper time: ${this.fmtTime(ship.properTime)}`,
             `Coord time: ${this.fmtTime(ship.coordinateTime)}`,
