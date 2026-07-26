@@ -33,15 +33,16 @@ export class Autopilot {
         const v = Math.abs(this.ship.velocity);
         const gamma = this.ship.gamma;
 
-        const stopDist = (C * C / this.accel) * (gamma - 1);
-        const safetyMargin = 1.5;
-
-        if (absDist < 1e5 && v < 50) {
+        if (absDist < 1e6 && v < 1000) {
             this.ship.setThrust(0, 1);
+            this.ship.velocity = 0;
             this.phase = 'arrived';
             this.engaged = false;
             return;
         }
+
+        const stopDist = (C * C / this.accel) * (gamma - 1);
+        const safetyMargin = 1.5;
 
         if (stopDist * safetyMargin >= absDist) {
             this.phase = 'brake';
