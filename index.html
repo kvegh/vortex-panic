@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VORTEX PANIC</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+html, body { height: 100%; overflow: hidden; }
+body {
+    background: #0a0a1a;
+    color: #d0d0d0;
+    font-family: 'Courier New', monospace;
+    display: flex;
+    flex-direction: column;
+}
+#header {
+    background: #0d0d2b;
+    padding: 6px 16px;
+    border-bottom: 1px solid #2a2a4a;
+    flex-shrink: 0;
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+}
+#header h1 { font-size: 16px; color: #4488cc; white-space: nowrap; }
+#header .sub { font-size: 9px; color: #555; }
+canvas { flex: 1; display: block; min-height: 200px; cursor: crosshair; }
+#panel {
+    flex-shrink: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 3px;
+    padding: 4px;
+    background: #111;
+    border-top: 1px solid #2a2a4a;
+    max-height: 45vh;
+    overflow-y: auto;
+}
+.sec {
+    background: #1a1a2e;
+    padding: 6px 8px;
+    border-radius: 3px;
+    flex: 1;
+    min-width: 140px;
+}
+.sec h3 {
+    font-size: 9px;
+    color: #4488cc;
+    margin-bottom: 3px;
+    letter-spacing: 1px;
+}
+.sec div { font-size: 11px; line-height: 1.5; }
+.val { color: #fff; }
+.dim { color: #777; font-size: 10px; }
+input[type="range"] {
+    width: 100%;
+    margin: 3px 0;
+    accent-color: #4488cc;
+}
+button {
+    background: #2a2a4e;
+    color: #4488cc;
+    border: 1px solid #4488cc;
+    padding: 3px 10px;
+    font-family: 'Courier New', monospace;
+    font-size: 10px;
+    cursor: pointer;
+    border-radius: 3px;
+    margin-top: 3px;
+}
+button:hover { background: #3a3a5e; }
+button.braking { border-color: #ff6644; color: #ff6644; }
+#destinations label {
+    display: block;
+    font-size: 10px;
+    padding: 1px 0;
+    cursor: pointer;
+}
+#destinations input { margin-right: 4px; }
+.fuel-track {
+    background: #222;
+    height: 6px;
+    border-radius: 3px;
+    margin-top: 3px;
+    overflow: hidden;
+}
+.fuel-fill {
+    height: 100%;
+    background: #4488cc;
+    transition: width 0.3s;
+}
+</style>
+</head>
+<body>
+
+<div id="header">
+    <h1>VORTEX PANIC</h1>
+    <span class="sub">Vastly Overambitious Relativistic Travel EXperience with Proportional AstroNavigation Illustrating Cosmic-insignificance</span>
+</div>
+
+<canvas id="canvas"></canvas>
+
+<div id="panel">
+    <div class="sec">
+        <h3>SPEED</h3>
+        <div class="val" id="speed-c">0.000000 c</div>
+        <div class="dim" id="speed-kms">0.0 km/s</div>
+        <div class="dim" id="speed-kmh">0.0 km/h</div>
+        <div id="gamma">γ = 1.0000</div>
+    </div>
+
+    <div class="sec">
+        <h3>DISTANCE FROM EARTH</h3>
+        <div class="val" id="dist-km">6,771.0 km</div>
+        <div id="dist-ly">0.00e+0 ly</div>
+    </div>
+
+    <div class="sec">
+        <h3>TIME</h3>
+        <div>Ship: <span class="val" id="proper-time">0.0s</span></div>
+        <div>Earth: <span class="val" id="coord-time">0.0s</span></div>
+        <div>Dilation: <span class="val" id="dilation">1.000x</span></div>
+    </div>
+
+    <div class="sec">
+        <h3>FLIGHT</h3>
+        <div>Accel: <span class="val" id="accel">0.0g</span></div>
+        <div>Fuel: <span class="val" id="fuel">100.0%</span></div>
+        <div class="fuel-track"><div class="fuel-fill" id="fuel-bar" style="width:100%"></div></div>
+        <div>ETA: <span class="val" id="eta">select target</span></div>
+    </div>
+
+    <div class="sec">
+        <h3>TARGET</h3>
+        <div>Dest: <span class="val" id="dest-name">—</span></div>
+        <div class="dim" id="dest-dist"></div>
+        <h3 style="margin-top:4px">ROUND TRIP</h3>
+        <div>Earth ages: <span class="val" id="rt-earth">—</span></div>
+        <div>You age: <span class="val" id="rt-ship">—</span></div>
+    </div>
+
+    <div class="sec">
+        <h3>THRUST</h3>
+        <input type="range" id="thrust-slider" min="0" max="10" step="0.1" value="0">
+        <div id="thrust-value">0.0g</div>
+        <button id="dir-btn">ACCEL ▶</button>
+    </div>
+
+    <div class="sec">
+        <h3>DESTINATION</h3>
+        <div id="destinations"></div>
+        <button id="ap-btn">AUTOPILOT</button>
+    </div>
+
+    <div class="sec">
+        <h3>TIME SCALE</h3>
+        <input type="range" id="time-slider" min="0" max="15" step="0.1" value="0">
+        <div id="time-value">1x</div>
+        <button id="reset-btn">RESET</button>
+    </div>
+</div>
+
+<script type="module" src="js/main.js"></script>
+</body>
+</html>

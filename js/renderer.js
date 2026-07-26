@@ -1,0 +1,206 @@
+import { LY, AU } from './constants.js';
+
+export class Renderer {
+    constructor(canvas) {
+        this.canvas = canvas;
+        this.ctx = canvas.getContext('2d');
+        this.pixelsPerDecade = 45;
+        this.shipScreenFrac = 0.7;
+        this.shipScreenX = 0;
+        this.shipScreenY = 0;
+        this.stars = [];
+        for (let i = 0; i < 200; i++) {
+            this.stars.push({
+                x: Math.random(),
+                y: Math.random(),
+                b: Math.random() * 0.7 + 0.3,
+                s: Math.random() * 1.5 + 0.5,
+            });
+        }
+        this.resize();
+        window.addEventListener('resize', () => this.resize());
+    }
+
+    resize() {
+        const rect = this.canvas.getBoundingClientRect();
+        this.canvas.width = rect.width;
+        this.canvas.height = rect.height;
+        this.shipScreenX = this.canvas.width * this.shipScreenFrac;
+        this.shipScreenY = this.canvas.height * 0.5;
+    }
+
+    worldToScreen(objPos, shipPos) {
+        const delta = objPos - shipPos;
+        const abs = Math.abs(delta);
+        if (abs < 1) return this.shipScreenX;
+        const sign = Math.sign(delta);
+        const logDist = Math.log10(1 + abs) * this.pixelsPerDecade;
+        return this.shipScreenX - sign * logDist;
+    }
+
+    bodyScreenRadius(radius, distance) {
+        if (radius <= 0) return 3;
+        if (distance < radius) return this.canvas.height * 0.4;
+        const angular = radius / distance;
+        return Math.max(3, Math.min(angular * this.canvas.height * 0.3, this.canvas.height * 0.4));
+    }
+
+    render(ship, bodies) {
+        const ctx = this.ctx;
+        const w = this.canvas.width;
+        const h = this.canvas.height;
+
+        ctx.fillStyle = '#0a0a1a';
+        ctx.fillRect(0, 0, w, h);
+
+        for (const star of this.stars) {
+            ctx.fillStyle = `rgba(255,255,255,${star.b})`;
+            ctx.beginPath();
+            ctx.arc(star.x * w, star.y * h, star.s, 0, Math.PI * 2);
+            ctx.fill();
+        }
+
+        ctx.strokeStyle = 'rgba(100,100,200,0.15)';
+        ctx.lineWidth = 1;
+        ctx.beginPath();
+        ctx.moveTo(0, this.shipScreenY);
+        ctx.lineTo(w, this.shipScreenY);
+        ctx.stroke();
+
+        const mapped = bodies.map(b => ({
+            body: b,
+            sx: this.worldToScreen(b.position, ship.position),
+            dist: Math.abs(b.position - ship.position),
+        })).sort((a, b) => a.sx - b.sx);
+
+        const groups = [];
+        let cur = null;
+        for (const m of mapped) {
+            if (!cur || Math.abs(m.sx - cur.sx) > 20) {
+                cur = { sx: m.sx, items: [m] };
+                groups.push(cur);
+            } else {
+                cur.items.push(m);
+                cur.sx = cur.items.reduce((s, i) => s + i.sx, 0) / cur.items.length;
+            }
+        }
+
+        const leftArrows = [];
+        const rightArrows = [];
+
+        for (const g of groups) {
+            if (g.sx < -30) { leftArrows.push(g); continue; }
+            if (g.sx > w + 30) { rightArrows.push(g); continue; }
+
+            const nearest = g.items.reduce((a, b) => a.dist < b.dist ? a : b);
+            const r = this.bodyScreenRadius(nearest.body.radius, nearest.dist);
+
+            if (r > 10) {
+                const grad = ctx.createRadialGradient(g.sx, this.shipScreenY, 0, g.sx, this.shipScreenY, r);
+                grad.addColorStop(0, nearest.body.color);
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
+            } else {
+                ctx.fillStyle = nearest.body.color;
+            }
+            ctx.beginPath();
+            ctx.arc(g.sx, this.shipScreenY, r, 0, Math.PI * 2);
+            ctx.fill();
+
+            ctx.fillStyle = '#ffffff';
+            ctx.font = '11px monospace';
+            ctx.textAlign = 'center';
+            g.items.forEach((item, i) => {
+                ctx.fillText(item.body.name, g.sx, this.shipScreenY + r + 15 + i * 13);
+            });
+            ctx.fillStyle = '#888888';
+            ctx.font = '9px monospace';
+            ctx.fillText(this.fmtDist(nearest.dist), g.sx, this.shipScreenY + r + 15 + g.items.length * 13);
+        }
+
+        this.drawArrows(ctx, leftArrows, true, h);
+        this.drawArrows(ctx, rightArrows, false, h);
+        this.drawShip(ctx, ship);
+    }
+
+    drawArrows(ctx, groups, isLeft, h) {
+        const x = isLeft ? 12 : this.canvas.width - 12;
+        let y = 20;
+        for (const g of groups) {
+            const names = g.items.map(i => i.body.name).join(', ');
+            const color = g.items[0].body.color;
+
+            ctx.fillStyle = color;
+            ctx.beginPath();
+            if (isLeft) {
+                ctx.moveTo(x - 6, y);
+                ctx.lineTo(x + 2, y - 4);
+                ctx.lineTo(x + 2, y + 4);
+            } else {
+                ctx.moveTo(x + 6, y);
+                ctx.lineTo(x - 2, y - 4);
+                ctx.lineTo(x - 2, y + 4);
+            }
+            ctx.closePath();
+            ctx.fill();
+
+            ctx.fillStyle = color;
+            ctx.font = '9px monospace';
+            ctx.textAlign = isLeft ? 'left' : 'right';
+            ctx.fillText(names, isLeft ? x + 8 : x - 8, y + 3);
+            y += 16;
+        }
+    }
+
+    drawShip(ctx, ship) {
+        const x = this.shipScreenX;
+        const y = this.shipScreenY;
+        const g0 = 9.80665;
+
+        if (ship.thrustLevel > 0 && ship.hasFuel) {
+            const len = 10 + (ship.thrustLevel / g0) * 4;
+            let bx, tx;
+            if (ship.thrustDirection > 0) {
+                bx = x + 10; tx = bx + len;
+            } else {
+                bx = x - 15; tx = bx - len;
+            }
+            ctx.fillStyle = '#ff6600';
+            ctx.globalAlpha = 0.5 + Math.random() * 0.4;
+            ctx.beginPath();
+            ctx.moveTo(bx, y - 5);
+            ctx.lineTo(tx, y);
+            ctx.lineTo(bx, y + 5);
+            ctx.closePath();
+            ctx.fill();
+            ctx.globalAlpha = 1;
+        }
+
+        ctx.fillStyle = '#cccccc';
+        ctx.beginPath();
+        ctx.moveTo(x - 15, y);
+        ctx.lineTo(x + 10, y - 8);
+        ctx.lineTo(x + 10, y + 8);
+        ctx.closePath();
+        ctx.fill();
+        ctx.strokeStyle = '#ffffff';
+        ctx.lineWidth = 1;
+        ctx.stroke();
+    }
+
+    setZoom(ppd) {
+        this.pixelsPerDecade = Math.max(10, Math.min(200, ppd));
+    }
+
+    fmtDist(d) {
+        if (d < 1e3) return d.toFixed(0) + ' m';
+        if (d < 1e6) return (d / 1e3).toFixed(1) + ' km';
+        if (d < 1e9) return (d / 1e6).toFixed(1) + 'K km';
+        if (d < AU * 0.1) return (d / 1e9).toFixed(2) + 'M km';
+        if (d < LY * 0.1) return (d / AU).toFixed(2) + ' AU';
+        if (d < 1000 * LY) return (d / LY).toFixed(2) + ' ly';
+        if (d < 1e6 * LY) return (d / (1000 * LY)).toFixed(1) + 'K ly';
+        if (d < 1e9 * LY) return (d / (1e6 * LY)).toFixed(1) + 'M ly';
+        return (d / (1e9 * LY)).toFixed(1) + 'B ly';
+    }
+}
