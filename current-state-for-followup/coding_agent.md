@@ -228,13 +228,23 @@ All CSS is inline in `index.html` `<style>` block. Key selectors:
 
 4. **Reset not clearing AP button state**: Green ap-on class persisted after reset. Fix: explicit classList.remove in reset handler.
 
+## Thrust preset rationale
+
+The four presets were researched, not arbitrary:
+- **1g**: c/g ~ 1 year. The fundamental coincidence that makes 1g the "human-scale" relativistic acceleration.
+- **2g**: Trained military crews can sustain this for hours-to-days. Max "hardened human" threshold.
+- **55g**: Military-grade electronics are rated ~50-100g sustained. Practical unmanned probe limit.
+- **250g**: At 200g you hit 0.99998c in 10 days — effectively c. Going higher has diminishing returns. 250g was chosen after extensive calculation of 200g/300g/400g/450g/475g to demonstrate that above ~200g the speed gain is negligible but the time dilation keeps improving slightly.
+
 ## Planned but not implemented
 
-1. **New landmarks**: Capella (43 ly) and Polaris (430 ly) discussed as additions to fill the gap between Alpha Centauri (4.37 ly) and Pillars (6,500 ly). Would be added to the BODIES array in constants.js with appropriate mass/radius values.
+1. **New landmarks**: Capella (43 ly, quadruple star in Auriga) and Polaris (~430 ly, the North Star) discussed as additions to fill the logarithmic gap between Alpha Centauri (4.37 ly) and Pillars (6,500 ly). To add: insert into BODIES array in `constants.js` at the correct position (between index 4 Alpha Centauri and index 5 Pillars). Need mass and radius values — Capella: mass ~2.7 solar masses total (5.37e30 kg), radius ~12 solar radii (8.35e9 m). Polaris: mass ~5.4 solar masses (1.07e31 kg), radius ~46 solar radii (3.2e10 m).
 
-2. **Reference tables**: A 1g acceleration table exists with all destinations showing ship time, Earth aging, and distance-at-time percentages. Tables at 2g, 55g, 250g were implied but not created.
+2. **Reference tables at 2g, 55g, 250g**: A detailed 1g table with all destinations was produced in conversation. The owner's phrasing ("Table 1") implies they want tables at the other three preset g-levels too. Use the relativistic rocket equation: tau = (2c/a) * acosh(1 + ad/2c²) for one-way ship time, t = (2c/a) * sqrt(S² + 2S) where S = ad/2c² for one-way Earth time. Round trip = 2x both.
 
 3. **The v6 sim hasn't been flight-tested** with a real Moon flight + log paste by the owner.
+
+4. **README.md is outdated**: Says "2D", mentions "gravity slingshots" and "pilot". The sim is 1D, autopilot-only, no slingshots.
 
 ## How to make changes
 
@@ -247,14 +257,26 @@ All CSS is inline in `index.html` `<style>` block. Key selectors:
 
 ## Owner interaction style
 
-The owner steers by output, not by reading code. They will:
+The owner's programming background: no JavaScript, a little HTML, tiny fragments of Python, some Ansible, Bash, teenie tiny C. Not a web developer.
+
+They steer by output, not by reading code. They will:
 - Run the sim in a browser
-- Paste flight log snapshots when something goes wrong
-- Describe visual issues ("the panel is too tall", "the text is hanging off the right")
-- Ask physics questions to validate the sim's behavior
+- Paste flight log snapshots when something goes wrong (this is their primary debugging method — the flight log is their window into what happened)
+- Describe visual issues ("the panel is too tall", "the text is hanging off the right", "destinations are hanging out on the right")
+- Ask physics sanity-check questions to validate the sim's behavior ("wait, Edge is 46B ly but we get there in 47 yrs?", "1g for 1 year = 0.77c????", "how can Earth age 1300 years in 10 days?"). These are validation, not confusion — answer with the math and explain why the surprising result is correct.
 - Expect proactive design suggestions ("Always provide constructive input to co-design with me")
+- Sometimes go on "sidequests" — extended physics calculation sessions (reference tables, g-force research, car acceleration comparisons) that inform design decisions but don't directly produce code changes
 
 They explicitly do NOT:
 - Read JavaScript
 - Use dev tools or console
 - Debug code themselves
+
+## Key physics insight for any agent continuing
+
+c/g = 3.057e7 seconds = 0.969 years ~ 354 days. This fundamental coincidence means:
+- 1g for 1 year → 0.77c
+- Ship proper time grows logarithmically: tau = (2c/a) * arccosh(1 + ad/2c²), and arccosh ≈ ln for large arguments
+- Therefore 46.5B ly is reachable in ~48 years ship time at 1g
+- On Earth, drag makes F = ma meaningless at high speed (car at "2g" tops out at 350 km/h). In space, there is no drag — 1g stays 1g forever, only gamma³ suppression of coordinate acceleration limits the approach to c
+- Above ~200g, speed gains are negligible (0.99998c vs 0.999999c) — the preset values were chosen with this in mind

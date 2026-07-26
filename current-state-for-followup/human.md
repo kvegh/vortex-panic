@@ -87,19 +87,64 @@ GitHub Pages from `git@github.com:kvegh/vortex-panic.git`. Push to main, it's li
 
 ## What the owner cares about
 
-The project owner doesn't read JavaScript. They steer by looking at the output — running the sim in a browser, pasting flight log snapshots, describing what's wrong visually. They want:
+The project owner's programming background: no JavaScript, a little HTML, tiny fragments of Python, some Ansible, Bash, teenie tiny C. They are NOT a web developer. They steer by looking at the output — running the sim in a browser, pasting flight log snapshots, describing what's wrong visually. They want:
 
-1. Proactive design suggestions — don't just implement requests, co-design the experience
+1. Proactive design suggestions — don't just implement requests, co-design the experience ("Always provide constructive input to co-design with me")
 2. Physics accuracy — the sim should reflect real relativistic physics faithfully
 3. Clean, minimal UI — maximum canvas space, compact controls
 4. Every UI action logged — full observability through the flight log
 
+The owner validates physics by asking sanity-check questions ("wait, Edge is 46B ly but we get there in 47 yrs?", "1g for 1 year = 0.77c????", "how can Earth age 1300 years in 10 days?"). These aren't confusion — they're the owner cross-checking simulation behavior against intuition. Answer with the math and explain why the surprising result is correct.
+
+## README.md is outdated
+
+The README says "2D", mentions "gravity slingshots" and "pilot a spacecraft". The sim is actually 1D, has no slingshot mechanic, and is autopilot-only. The README predates most of the development. Update it when convenient.
+
+## Thrust preset research
+
+The four thrust presets were chosen based on research into sustained g-force tolerances:
+
+- **Human 1g**: Comfortable indefinitely. Earth-normal gravity. The "baseline" that makes relativistic travel human-scale thanks to the c/g ~ 1 year coincidence.
+- **Hardened 2g**: Trained military crew or fighter pilots can sustain this for extended periods (hours to days). Roughly the max for "battle-hardened humans".
+- **Unmanned 55g**: Based on research into hardened electronics and spacecraft components. Military electronics are rated to ~50-100g sustained. 55g is the practical limit for robotic probes. This is the default preset.
+- **Fantasy 250g**: No physical justification — pure sci-fi. Chosen because at 200g you reach 0.99998c in 10 days (essentially c), so going higher has diminishing returns. 250g gives deep relativistic time dilation and extreme twin paradox effects. Originally considered 500g, then researched down through 200g/300g/400g/450g/475g calculations to find that 200g+ is effectively "at c" for all practical purposes, so 250g was chosen as a round number.
+
+## Reference table — 1g acceleration
+
+Ship proper time (one-way, accel to midpoint + decel to arrival), Earth aging (round trip), and distance covered at 10%/50%/90% of ship journey time:
+
+| Destination | Distance | Ship (1-way) | Earth (round trip) | @10% | @50% | @90% |
+|---|---|---|---|---|---|---|
+| Moon | 384,400 km | 3.5 hrs | 7.0 hrs | 2% | 50% | 98% |
+| Sun | 1 AU | 2.9 days | 5.7 days | 2% | 50% | 98% |
+| Pluto | 39.5 AU | 18 days | 36 days | 2% | 50% | 98% |
+| Alpha Centauri | 4.37 ly | 3.6 yrs | 12.0 yrs | 1.5% | 50% | 98.5% |
+| Capella* | 43 ly | 7.4 yrs | 89.8 yrs | 0.7% | 50% | 99.3% |
+| Polaris* | 430 ly | 11.8 yrs | 864 yrs | 0.19% | 50% | 99.81% |
+| Pillars | 6,500 ly | 17.1 yrs | 13.0K yrs | 0.03% | 50% | 99.97% |
+| Sgr A* | 26,000 ly | 19.8 yrs | 52.0K yrs | 0.01% | 50% | 99.99% |
+| Andromeda | 2.5M ly | 28.6 yrs | 5.0M yrs | <0.01% | 50% | >99.99% |
+| Supercluster | 100M ly | 35.7 yrs | 200M yrs | <0.01% | 50% | >99.99% |
+| Edge | 46.5B ly | 47.6 yrs | 93.0B yrs | <0.01% | 50% | >99.99% |
+
+*Capella and Polaris are not yet in the sim — discussed as planned additions.
+
+The @10%/@90% columns show a striking pattern: nearby targets (Moon through Pluto) are symmetric 2%/98% — purely Newtonian. As distances grow, the percentages skew dramatically because the ship spends most of its proper time at near-c speeds, covering almost all the distance in the last fraction of journey time.
+
 ## Discussed but not yet implemented
 
-- **Two new landmarks**: Capella (43 ly) and Polaris (430 ly) — to fill the gap between Alpha Centauri (4.37 ly) and Pillars of Creation (6,500 ly). Already researched and calculated in reference tables.
-- **Reference tables at other g-levels**: The owner has a 1g table with all destinations. Tables at 2g, 55g, and 250g were implied but not yet produced.
+- **Two new landmarks**: Capella (43 ly, quadruple star system in Auriga) and Polaris (430 ly, the North Star) — to fill the logarithmic gap between Alpha Centauri (4.37 ly) and Pillars of Creation (6,500 ly). Already researched and calculated in the reference table above. Would be added to the BODIES array in `js/constants.js`.
+- **Reference tables at other g-levels**: Tables at 2g, 55g, and 250g were implied ("Table 1" suggests more) but not yet produced.
 - **The sim hasn't been flight-tested at v6** by the owner yet. The Moon flight was tested through v5 but v6 (autopilot-only, fixed time scale) hasn't been verified with a real flight log paste.
 
-## Key physics insight for anyone continuing
+## Key physics insights for anyone continuing
 
-c/g is approximately 1 year (354 days). This means 1g acceleration for 1 year gets you to ~0.77c. Ship proper time grows logarithmically with distance (arccosh ~ ln for large arguments), so even 46.5 billion light-years is reachable in ~48 years of ship time at 1g. The twin paradox is the whole point of the sim — you arrive in a human lifetime while Earth ages billions of years.
+1. **c/g ~ 1 year (354 days)**: This is a fundamental coincidence of nature. It means 1g acceleration for 1 year gets you to ~0.77c. This makes 1g the "human-scale" relativistic acceleration — comfortable and gets you to relativistic speeds in a familiar timeframe.
+
+2. **Proper time grows logarithmically**: Ship time = (2c/a) * arccosh(1 + ad/2c²). For large distances, arccosh ≈ ln, so proper time grows as the logarithm of distance. This is why 46.5 billion light-years is reachable in ~48 years of ship time at 1g — the logarithm flattens everything out.
+
+3. **No air drag in space**: On Earth, a car at "2g" reaches 350 km/h and stops accelerating because air drag = engine force. In space, there is no drag. 1g stays 1g forever. This is why constant acceleration is so powerful — the ship never hits a "top speed" from drag, only the relativistic velocity limit (gamma^3 suppression of coordinate acceleration).
+
+4. **The twin paradox is the point**: The sim exists to make you feel the twin paradox viscerally. You fly to Alpha Centauri in 3.6 years of ship time, but Earth ages 12 years. You fly to the Edge in 48 years, Earth ages 93 billion years. The flight log shows both clocks diverging in real time.
+
+5. **Above ~200g, diminishing returns**: At 200g you reach 0.99998c in 10 days. Going higher (250g, 500g) barely changes the cruise speed but does reduce ship proper time marginally. This is why 250g was chosen as the "fantasy" cap rather than 500g or 1000g.
