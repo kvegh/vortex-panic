@@ -17,13 +17,13 @@ ui.setLog(log);
 
 let paused = false;
 
-log.add('[0s] VORTEX PANIC v5 — Parked on Earth surface');
+log.add('[0s] VORTEX PANIC v6 — Parked on Earth surface');
 
 ui.onReset = () => {
     ship.reset();
     autopilot.disengage();
     log.clear();
-    log.add('[0s] VORTEX PANIC v5 — Parked on Earth surface');
+    log.add('[0s] VORTEX PANIC v6 — Parked on Earth surface');
     document.getElementById('ap-btn').textContent = 'AUTOPILOT';
     document.getElementById('ap-btn').classList.remove('ap-on');
     paused = false;
