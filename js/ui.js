@@ -7,7 +7,6 @@ export class UI {
         this.timeScale = 1;
         this.selectedDest = null;
         this.onReset = null;
-        this.onManualThrust = null;
         this.log = null;
         this.init();
     }
@@ -15,40 +14,12 @@ export class UI {
     setLog(log) { this.log = log; }
 
     init() {
-        const thrustSlider = document.getElementById('thrust-slider');
-        const thrustVal = document.getElementById('thrust-value');
-        thrustSlider.addEventListener('input', () => {
-            const gVal = parseFloat(thrustSlider.value);
-            this.ship.thrustLevel = gVal * g0;
-            if (gVal > 0) this.ship.parked = false;
-            thrustVal.textContent = gVal.toFixed(1) + 'g';
-            if (this.onManualThrust) this.onManualThrust();
-        });
-        thrustSlider.addEventListener('change', () => {
-            const gVal = parseFloat(thrustSlider.value);
-            if (this.log) this.log.logUI(`Thrust set to ${gVal.toFixed(1)}g (manual)`);
-        });
-
-        const dirBtn = document.getElementById('dir-btn');
-        dirBtn.addEventListener('click', () => {
-            this.ship.thrustDirection *= -1;
-            const label = this.ship.thrustDirection > 0 ? 'ACCEL ▶' : '◀ BRAKE';
-            dirBtn.textContent = label;
-            dirBtn.classList.toggle('braking', this.ship.thrustDirection < 0);
-            if (this.log) this.log.logUI(`Direction: ${label} (manual)`);
-            if (this.onManualThrust) this.onManualThrust();
-        });
-
-        const timeSlider = document.getElementById('time-slider');
-        const timeVal = document.getElementById('time-value');
-        timeSlider.addEventListener('input', () => {
-            const exp = parseFloat(timeSlider.value);
-            this.timeScale = Math.pow(10, exp);
-            timeVal.textContent = this.fmtScale(this.timeScale);
-        });
-        timeSlider.addEventListener('change', () => {
-            if (this.log) this.log.logUI(`TimeScale: ${this.fmtScale(this.timeScale)}`);
-        });
+        for (const radio of document.querySelectorAll('input[name="timescale"]')) {
+            radio.addEventListener('change', () => {
+                this.timeScale = parseFloat(radio.value);
+                if (this.log) this.log.logUI(`TimeScale: ${this.fmtScale(this.timeScale)}`);
+            });
+        }
 
         this.apThrustG = 55;
         for (const radio of document.querySelectorAll('input[name="apthrust"]')) {
@@ -77,33 +48,10 @@ export class UI {
         document.getElementById('reset-btn').addEventListener('click', () => {
             if (this.log) this.log.logUI('RESET');
             if (this.onReset) this.onReset();
-            thrustSlider.value = 0;
-            thrustVal.textContent = '0.0g';
-            dirBtn.textContent = 'ACCEL ▶';
-            dirBtn.classList.remove('braking');
         });
     }
 
     getTimeScale() { return this.timeScale; }
-
-    updateThrustDisplay() {
-        const gVal = this.ship.thrustLevel / g0;
-        document.getElementById('thrust-slider').value = gVal;
-        document.getElementById('thrust-value').textContent = gVal.toFixed(1) + 'g';
-        const dirBtn = document.getElementById('dir-btn');
-        dirBtn.textContent = this.ship.thrustDirection > 0 ? 'ACCEL ▶' : '◀ BRAKE';
-        dirBtn.classList.toggle('braking', this.ship.thrustDirection < 0);
-    }
-
-    disableManualControls() {
-        document.getElementById('thrust-slider').disabled = true;
-        document.getElementById('dir-btn').disabled = true;
-    }
-
-    enableManualControls() {
-        document.getElementById('thrust-slider').disabled = false;
-        document.getElementById('dir-btn').disabled = false;
-    }
 
     update(ship) {
         const spd = Math.abs(ship.velocity);

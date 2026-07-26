@@ -70,7 +70,6 @@ button {
     margin-top: 3px;
 }
 #log-header button { padding: 1px 6px; font-size: 9px; margin-top: 0; }
-input[type="range"]:disabled { opacity: 0.3; pointer-events: none; }
 button:disabled { opacity: 0.3; pointer-events: none; }
 button:hover { background: #3a3a5e; }
 button.braking { border-color: #ff6644; color: #ff6644; }
@@ -181,13 +180,6 @@ button.ap-on { border-color: #44ff88; color: #44ff88; background: #1a3a2e; }
         <div>You age: <span class="val" id="rt-ship">—</span></div>
     </div>
 
-    <div class="sec">
-        <h3>THRUST</h3>
-        <input type="range" id="thrust-slider" min="0" max="10" step="0.1" value="0">
-        <div id="thrust-value">0.0g</div>
-        <button id="dir-btn">ACCEL ▶</button>
-    </div>
-
     <div class="sec" style="min-width:260px;flex:2">
         <h3>DESTINATION</h3>
         <div id="destinations"></div>
@@ -203,8 +195,16 @@ button.ap-on { border-color: #44ff88; color: #44ff88; background: #1a3a2e; }
 
     <div class="sec">
         <h3>TIME SCALE</h3>
-        <input type="range" id="time-slider" min="0" max="15" step="0.1" value="0">
-        <div id="time-value">1x</div>
+        <div id="timescale-modes" style="display:flex;gap:6px;font-size:10px;flex-wrap:wrap">
+            <label><input type="radio" name="timescale" value="1" checked> 1x</label>
+            <label><input type="radio" name="timescale" value="10"> 10x</label>
+            <label><input type="radio" name="timescale" value="50"> 50x</label>
+            <label><input type="radio" name="timescale" value="100"> 100x</label>
+            <label><input type="radio" name="timescale" value="1000"> 1Kx</label>
+            <label><input type="radio" name="timescale" value="10000"> 10Kx</label>
+            <label><input type="radio" name="timescale" value="100000"> 100Kx</label>
+            <label><input type="radio" name="timescale" value="1000000"> 1Mx</label>
+        </div>
         <button id="reset-btn">RESET</button>
     </div>
 

@@ -23,10 +23,9 @@ ui.onReset = () => {
     ship.reset();
     autopilot.disengage();
     log.clear();
-    log.add('[0s] VORTEX PANIC v5 — Ship reset to LEO');
+    log.add('[0s] VORTEX PANIC v5 — Parked on Earth surface');
     document.getElementById('ap-btn').textContent = 'AUTOPILOT';
     document.getElementById('ap-btn').classList.remove('ap-on');
-    ui.enableManualControls();
     paused = false;
     document.getElementById('pause-btn').textContent = '⏸ PAUSE';
 };
@@ -79,14 +78,12 @@ document.getElementById('ap-btn').addEventListener('click', () => {
         autopilot.disengage();
         document.getElementById('ap-btn').textContent = 'AUTOPILOT';
         document.getElementById('ap-btn').classList.remove('ap-on');
-        ui.enableManualControls();
         log.logUI('Autopilot disengaged');
     } else if (ui.selectedDest) {
         autopilot.setTarget(ui.selectedDest);
         autopilot.engage(ui.apThrustG * 9.80665);
         document.getElementById('ap-btn').textContent = '⚡ DISENGAGE';
         document.getElementById('ap-btn').classList.add('ap-on');
-        ui.disableManualControls();
         log.logUI(`Autopilot engaged → ${ui.selectedDest.name} at ${ui.apThrustG}g`);
     } else {
         log.logUI('Autopilot FAILED — no destination selected!');
@@ -118,12 +115,10 @@ function loop(timestamp) {
         }
     }
 
-    if (autopilot.engaged) {
-        ui.updateThrustDisplay();
-    } else if (document.getElementById('thrust-slider').disabled) {
-        ui.enableManualControls();
+    if (!autopilot.engaged && autopilot.phase === 'arrived') {
         document.getElementById('ap-btn').textContent = 'AUTOPILOT';
         document.getElementById('ap-btn').classList.remove('ap-on');
+        autopilot.phase = '';
     }
     renderer.render(ship, BODIES, paused);
     ui.update(ship);
