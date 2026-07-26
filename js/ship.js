@@ -37,6 +37,18 @@ export class Ship {
         return this.mass > this.dryMass * 1.001;
     }
 
+    setState(s) {
+        this.position = s.position;
+        this.velocity = s.velocity;
+        this.mass = s.mass;
+        this.properTime = s.properTime;
+        this.coordinateTime = s.coordTime;
+        this.gamma = s.gamma;
+        this.thrustLevel = s.thrustLevel;
+        this.thrustDirection = s.thrustDirection;
+        this.parked = s.parked;
+    }
+
     update(dt, bodies) {
         if (dt <= 0) return;
 

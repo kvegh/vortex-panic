@@ -4,6 +4,7 @@ import { Renderer } from './renderer.js';
 import { UI } from './ui.js';
 import { Autopilot } from './autopilot.js';
 import { FlightLog } from './flightlog.js';
+import { flightStateAtFraction } from './physics.js';
 
 const canvas = document.getElementById('canvas');
 const ship = new Ship(SHIP_DEFAULTS);
@@ -17,13 +18,13 @@ ui.setLog(log);
 
 let paused = false;
 
-log.add('[0s] VORTEX PANIC v7 — Parked on Earth surface');
+log.add('[0s] VORTEX PANIC v8 — Parked on Earth surface');
 
 ui.onReset = () => {
     ship.reset();
     autopilot.disengage();
     log.clear();
-    log.add('[0s] VORTEX PANIC v7 — Parked on Earth surface');
+    log.add('[0s] VORTEX PANIC v8 — Parked on Earth surface');
     document.getElementById('ap-btn').textContent = 'AUTOPILOT';
     document.getElementById('ap-btn').classList.remove('ap-on');
     paused = false;
@@ -36,23 +37,70 @@ document.getElementById('pause-btn').addEventListener('click', () => {
     log.logUI(paused ? 'PAUSED' : 'RESUMED');
 });
 
-document.getElementById('step-btn').addEventListener('click', () => {
+function stepToPercent(targetPct) {
+    if (autopilot.totalDist <= 0) {
+        log.logUI('STEP — no flight plan active');
+        return;
+    }
+    if (targetPct < 0) targetPct = 0;
+    if (targetPct > 100) targetPct = 100;
+
+    const fraction = targetPct / 100;
+    const dir = Math.sign(autopilot.target.position - autopilot.startPos);
+    const s = flightStateAtFraction(fraction, autopilot.totalDist, autopilot.accel,
+        ship.totalMass, ship.dryMass, ship.exhaustVelocity);
+
+    ship.setState({
+        position: autopilot.startPos + dir * s.distTraveled,
+        velocity: dir * s.velocity,
+        mass: s.mass,
+        properTime: s.properTime,
+        coordTime: s.coordTime,
+        gamma: s.gamma,
+        thrustLevel: autopilot.accel,
+        thrustDirection: s.phase === 'brake' || s.phase === 'correct' ? -dir : dir,
+        parked: targetPct === 0,
+    });
+
+    autopilot.phase = s.phase;
+    if (targetPct > 0 && targetPct < 100) {
+        autopilot.engaged = true;
+        document.getElementById('ap-btn').textContent = '⚡ DISENGAGE';
+        document.getElementById('ap-btn').classList.add('ap-on');
+    }
+    if (targetPct >= 100) {
+        ship.velocity = 0;
+        ship.parked = true;
+        autopilot.phase = 'arrived';
+        autopilot.engaged = false;
+        document.getElementById('ap-btn').textContent = 'AUTOPILOT';
+        document.getElementById('ap-btn').classList.remove('ap-on');
+    }
+
+    log.lastProgressMilestone = Math.floor(fraction * 10) - 1;
+    log.lastSpeedBracket = -1;
+
     if (!paused) {
         paused = true;
         document.getElementById('pause-btn').textContent = '▶ RESUME';
     }
-    const timeScale = ui.getTimeScale();
-    const dtSim = 1.0 * timeScale;
-    const maxSteps = 2000;
-    const steps = Math.min(maxSteps, Math.max(1, Math.ceil(dtSim)));
-    const subDt = dtSim / steps;
-    for (let i = 0; i < steps; i++) {
-        autopilot.update();
-        ship.update(subDt, BODIES);
-    }
     renderer.render(ship, BODIES, paused);
     ui.update(ship);
-    log.logUI(`STEP (+${timeScale.toFixed(0)}s sim)`);
+    log.logUI(`STEP → ${targetPct}%`);
+}
+
+document.getElementById('step-fwd').addEventListener('click', () => {
+    const traveled = Math.abs(ship.position - autopilot.startPos);
+    const pct = autopilot.totalDist > 0 ? (traveled / autopilot.totalDist) * 100 : 0;
+    const target = Math.min(100, Math.ceil(pct / 10 + 0.001) * 10);
+    stepToPercent(target);
+});
+
+document.getElementById('step-back').addEventListener('click', () => {
+    const traveled = Math.abs(ship.position - autopilot.startPos);
+    const pct = autopilot.totalDist > 0 ? (traveled / autopilot.totalDist) * 100 : 0;
+    const target = Math.max(0, Math.floor(pct / 10 - 0.001) * 10);
+    stepToPercent(target);
 });
 
 document.getElementById('log-copy').addEventListener('click', () => {
