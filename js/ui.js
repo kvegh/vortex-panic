@@ -21,8 +21,11 @@ export class UI {
             const gVal = parseFloat(thrustSlider.value);
             this.ship.thrustLevel = gVal * g0;
             thrustVal.textContent = gVal.toFixed(1) + 'g';
-            if (this.log) this.log.logUI(`Thrust set to ${gVal.toFixed(1)}g (manual)`);
             if (this.onManualThrust) this.onManualThrust();
+        });
+        thrustSlider.addEventListener('change', () => {
+            const gVal = parseFloat(thrustSlider.value);
+            if (this.log) this.log.logUI(`Thrust set to ${gVal.toFixed(1)}g (manual)`);
         });
 
         const dirBtn = document.getElementById('dir-btn');
@@ -41,6 +44,8 @@ export class UI {
             const exp = parseFloat(timeSlider.value);
             this.timeScale = Math.pow(10, exp);
             timeVal.textContent = this.fmtScale(this.timeScale);
+        });
+        timeSlider.addEventListener('change', () => {
             if (this.log) this.log.logUI(`TimeScale: ${this.fmtScale(this.timeScale)}`);
         });
 
