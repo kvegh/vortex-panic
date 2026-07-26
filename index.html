@@ -70,6 +70,8 @@ button {
     margin-top: 3px;
 }
 #log-header button { padding: 1px 6px; font-size: 9px; margin-top: 0; }
+input[type="range"]:disabled { opacity: 0.3; pointer-events: none; }
+button:disabled { opacity: 0.3; pointer-events: none; }
 button:hover { background: #3a3a5e; }
 button.braking { border-color: #ff6644; color: #ff6644; }
 button.ap-on { border-color: #44ff88; color: #44ff88; background: #1a3a2e; }
@@ -164,7 +166,6 @@ button.ap-on { border-color: #44ff88; color: #44ff88; background: #1a3a2e; }
 
     <div class="sec">
         <h3>FLIGHT</h3>
-        <div>Accel: <span class="val" id="accel">0.0g</span></div>
         <div>Fuel: <span class="val" id="fuel">100.0%</span></div>
         <div class="fuel-track"><div class="fuel-fill" id="fuel-bar" style="width:100%"></div></div>
         <div>ETA: <span class="val" id="eta">select target</span></div>

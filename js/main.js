@@ -17,15 +17,6 @@ ui.setLog(log);
 
 let paused = false;
 
-ui.onManualThrust = () => {
-    if (autopilot.engaged) {
-        autopilot.disengage();
-        document.getElementById('ap-btn').textContent = 'AUTOPILOT';
-        document.getElementById('ap-btn').classList.remove('ap-on');
-        log.logUI('Autopilot auto-disengaged (manual thrust override)');
-    }
-};
-
 log.add('[0s] VORTEX PANIC v4 — Ship initialized in LEO — 400km above Earth');
 
 ui.onReset = () => {
@@ -34,6 +25,8 @@ ui.onReset = () => {
     log.clear();
     log.add('[0s] VORTEX PANIC v4 — Ship reset to LEO');
     document.getElementById('ap-btn').textContent = 'AUTOPILOT';
+    document.getElementById('ap-btn').classList.remove('ap-on');
+    ui.enableManualControls();
     paused = false;
     document.getElementById('pause-btn').textContent = '⏸ PAUSE';
 };
@@ -86,12 +79,14 @@ document.getElementById('ap-btn').addEventListener('click', () => {
         autopilot.disengage();
         document.getElementById('ap-btn').textContent = 'AUTOPILOT';
         document.getElementById('ap-btn').classList.remove('ap-on');
+        ui.enableManualControls();
         log.logUI('Autopilot disengaged');
     } else if (ui.selectedDest) {
         autopilot.setTarget(ui.selectedDest);
         autopilot.engage();
         document.getElementById('ap-btn').textContent = '⚡ DISENGAGE';
         document.getElementById('ap-btn').classList.add('ap-on');
+        ui.disableManualControls();
         log.logUI(`Autopilot engaged → ${ui.selectedDest.name}`);
     } else {
         log.logUI('Autopilot FAILED — no destination selected!');
@@ -123,7 +118,13 @@ function loop(timestamp) {
         }
     }
 
-    if (autopilot.engaged) ui.updateThrustDisplay();
+    if (autopilot.engaged) {
+        ui.updateThrustDisplay();
+    } else if (document.getElementById('thrust-slider').disabled) {
+        ui.enableManualControls();
+        document.getElementById('ap-btn').textContent = 'AUTOPILOT';
+        document.getElementById('ap-btn').classList.remove('ap-on');
+    }
     renderer.render(ship, BODIES, paused);
     ui.update(ship);
     log.update(ship, autopilot, BODIES);
