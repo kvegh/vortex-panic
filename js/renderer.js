@@ -258,6 +258,11 @@ export class Renderer {
             ctx.font = '10px monospace';
             ctx.textAlign = 'center';
             ctx.fillText('ACCELERATING', x, y - 20);
+        } else if (phase === 'coast') {
+            ctx.fillStyle = '#44ccff';
+            ctx.font = '10px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('COASTING', x, y - 20);
         } else if (isBraking) {
             ctx.fillStyle = '#ff8844';
             ctx.font = '10px monospace';

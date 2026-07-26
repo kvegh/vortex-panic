@@ -18,13 +18,13 @@ ui.setLog(log);
 
 let paused = false;
 
-log.add('[0s] VORTEX PANIC v10 — Parked on Earth surface');
+log.add('[0s] VORTEX PANIC v11 — Parked on Earth surface');
 
 ui.onReset = () => {
     ship.reset();
     autopilot.disengage();
     log.clear();
-    log.add('[0s] VORTEX PANIC v10 — Parked on Earth surface');
+    log.add('[0s] VORTEX PANIC v11 — Parked on Earth surface');
     document.getElementById('ap-btn').textContent = 'AUTOPILOT';
     document.getElementById('ap-btn').classList.remove('ap-on');
     paused = false;
@@ -57,7 +57,7 @@ function stepToPercent(targetPct) {
         properTime: s.properTime,
         coordTime: s.coordTime,
         gamma: s.gamma,
-        thrustLevel: autopilot.accel,
+        thrustLevel: s.phase === 'coast' ? 0 : autopilot.accel,
         thrustDirection: s.phase === 'brake' || s.phase === 'correct' ? -dir : dir,
         parked: targetPct === 0,
     });

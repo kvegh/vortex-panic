@@ -84,7 +84,7 @@ export class FlightLog {
         }
 
         if (autopilot.phase !== this.lastPhase && autopilot.phase) {
-            const phaseLabels = { accel: 'ACCELERATING', brake: 'BRAKING', correct: 'FINAL APPROACH', arrived: 'ARRIVED' };
+            const phaseLabels = { accel: 'ACCELERATING', coast: 'COASTING', brake: 'BRAKING', correct: 'FINAL APPROACH', arrived: 'ARRIVED' };
             const label = phaseLabels[autopilot.phase] || autopilot.phase;
             const target = autopilot.target ? autopilot.target.name : '?';
             const targetDist = autopilot.target ? this.fmtDist(Math.abs(autopilot.target.position - pos)) : '?';

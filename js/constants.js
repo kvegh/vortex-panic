@@ -9,6 +9,8 @@ export const BODIES = [
     { name: 'Moon',        position: 3.844e8,        mass: 7.342e22,  radius: 1.737e6,  color: '#aaaaaa' },
     { name: 'Sun',         position: 1 * AU,         mass: 1.989e30,  radius: 6.96e8,   color: '#ffcc33' },
     { name: 'Pluto',       position: 39.5 * AU,      mass: 1.309e22,  radius: 1.188e6,  color: '#cc9966' },
+    { name: 'Voyager 1',   position: 165 * AU,        mass: 825.5,     radius: 1.5,      color: '#88ccaa' },
+    { name: 'Oort Cloud',  position: 2000 * AU,       mass: 0,         radius: 0,        color: '#6688bb' },
     { name: 'α Centauri',  position: 4.37 * LY,      mass: 2.187e30,  radius: 8.51e8,   color: '#fff5e0' },
     { name: 'Pillars',     position: 6500 * LY,      mass: 1e34,      radius: 4 * LY,   color: '#cc66aa' },
     { name: 'Sgr A*',      position: 26000 * LY,     mass: 8.26e36,   radius: 2.2e10,   color: '#ff4444' },
@@ -20,7 +22,7 @@ export const BODIES = [
 export const SHIP_DEFAULTS = {
     position: 6.371e6,
     velocity: 0,
-    totalMass: 1e6,
+    totalMass: 1e7,
     fuelFraction: 0.9,
     exhaustVelocity: 0.1 * C,
 };

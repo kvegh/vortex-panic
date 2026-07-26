@@ -195,7 +195,29 @@ Ship rendered as a rocket image instead of a plain triangle. Flips on decelerati
 
 ---
 
-## Current State (v10)
+## v11 — 3-Phase Autopilot, New Landmarks, Ship Mass
+
+### Decisions
+
+1. **New landmarks — Voyager 1 and Oort Cloud**: added two intermediate landmarks between Pluto (39 AU) and Alpha Centauri (4.37 ly) to fill a 7,000× gap in the destination list. Voyager 1 at ~165 AU (current real-world position), Oort Cloud inner edge at ~2,000 AU.
+2. **Ship mass increased to 10,000t**: totalMass changed from 1,000t (1e6 kg) to 10,000t (1e7 kg). Fuel fraction stays at 0.9 → 9,000t fuel, 1,000t dry mass. Higher fuel mass extends achievable velocities and makes interstellar coasting viable.
+3. **3-phase fuel-aware autopilot**: replaced symmetric midpoint flight profile with a new profile for long-distance flights:
+   - **ACCELERATING**: full thrust until 50% of initial fuel is burned
+   - **COASTING**: no thrust, ship maintains velocity at cruise speed (new phase)
+   - **DECELERATING**: reignites engines when remaining distance equals the acceleration distance
+   The old midpoint profile is kept as a fallback for short flights where the ship reaches the midpoint before burning 50% fuel.
+4. **Analytical accel phase computation**: new `computeAccelPhase()` in physics.js computes the acceleration distance, cruise velocity, and phase durations analytically from the rocket equation and relativistic kinematics. Used by both the autopilot (to decide profile at engagement) and the analytical flight state function (for step buttons).
+5. **3-phase analytical flight state**: `flightStateAtFraction()` rewritten to handle both profiles — 3-phase (accel/coast/decel) for long flights, midpoint for short flights. Coast phase returns constant velocity and mass. Decel phase mirrors accel equations (same proper acceleration → symmetric velocity-distance curve).
+6. **COASTING phase visuals**: "COASTING" text in cyan (#44ccff) above ship during coast. No flame rendered (thrust = 0). Ship faces left (nose toward destination, same as accel).
+7. **Physics insight**: proper acceleration `a` is constant and determines the velocity-distance relationship independently of mass. The accel and decel phases cover the same distance for the same delta-v. Mass only affects fuel consumption — the lighter ship during decel burns less fuel, arriving with reserves.
+
+### Design changes
+
+Autopilot has two flight profiles: 3-phase (long flights) and midpoint (short flights), selected at engagement based on analytical distance computation. Five flight phases: ACCELERATING → COASTING → BRAKING → FINAL APPROACH → ARRIVED. Ship mass 10× larger. Two new landmarks in Solar System outer reaches.
+
+---
+
+## Current State (v11)
 
 ### Architecture
 ```
@@ -203,9 +225,9 @@ index.html              — canvas + UI control panel + flight log
 img/                    — Earth, Moon, Sun textures (CC BY 4.0), ship sprite
 js/
   constants.js          — C, G, AU, LY, g0, BODIES[], SHIP_DEFAULTS
-  physics.js            — pure math: Lorentz, accel, gravity, fuel, round-trip, analytical flight state
+  physics.js            — pure math: Lorentz, accel, gravity, fuel, round-trip, analytical flight state, accel phase computation
   ship.js               — Ship class with setState() for bulk writes
-  autopilot.js          — midpoint flight planner with 0.1% correction zone
+  autopilot.js          — fuel-aware flight planner: 3-phase (coast) or midpoint, with 0.1% correction zone
   renderer.js           — canvas rendering with textures, ship sprite, log zoom, arrows
   ui.js                 — HTML controls, formatting, all UI event logging
   flightlog.js          — timestamped log with speed/progress milestones
@@ -214,7 +236,7 @@ docs/design/            — this file (consolidated design & decision history)
 ```
 
 ### Flight profile
-Symmetric accel/decel with midpoint flip. Four phases: ACCELERATING → BRAKING → FINAL APPROACH → ARRIVED. Analytical state available at any journey fraction. Ship sprite flips on deceleration, phase text shown above ship.
+Two profiles selected at engagement: **3-phase** (long flights where fuel lasts past midpoint) — ACCELERATING → COASTING → DECELERATING → FINAL APPROACH → ARRIVED. **Midpoint** (short flights) — symmetric accel/decel. Analytical state available at any journey fraction for both profiles. Ship sprite flips on deceleration, phase text shown above ship (green ACCELERATING, cyan COASTING, orange DECELERATING).
 
 ### Visual
 Dark navy (#0a0a1a) background, #4488cc headers, #ffffff subtitle, #8f8 log text. Ship rendered as rocket sprite (flips on decel). Textured bodies (Earth, Moon, Sun), clustering at <20px, PAUSED overlay, fuel visual bar. Canvas maximized (panel ≤35vh, log 4 lines). Flame sizes fixed per thrust preset (10/20/100/200px).
@@ -229,6 +251,8 @@ Autopilot-only. 4 thrust presets (1g/2g/55g/250g). 10 time scale steps (1x–100
 | Moon | 384,400 km |
 | Sun | 1 AU (~150M km) |
 | Pluto | ~39 AU |
+| Voyager 1 | ~165 AU |
+| Oort Cloud inner edge | ~2,000 AU |
 | Alpha Centauri | 4.37 ly |
 | Pillars of Creation | ~6,500 ly |
 | Sgr A* | ~26,000 ly |
