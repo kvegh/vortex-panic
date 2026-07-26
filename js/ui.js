@@ -30,7 +30,7 @@ export class UI {
         }
 
         const dest = document.getElementById('destinations');
-        for (const body of BODIES) {
+        for (const body of BODIES.filter(b => b.name !== 'Earth')) {
             const lbl = document.createElement('label');
             const radio = document.createElement('input');
             radio.type = 'radio';
