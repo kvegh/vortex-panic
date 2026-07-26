@@ -6,16 +6,21 @@ export class Autopilot {
         this.target = null;
         this.engaged = false;
         this.accel = 1 * g0;
+        this.phase = '';
     }
 
     setTarget(body) { this.target = body; }
 
     engage() {
-        if (this.target) this.engaged = true;
+        if (this.target) {
+            this.engaged = true;
+            this.phase = 'accel';
+        }
     }
 
     disengage() {
         this.engaged = false;
+        this.phase = '';
         this.ship.setThrust(0, 1);
     }
 
@@ -29,17 +34,21 @@ export class Autopilot {
         const gamma = this.ship.gamma;
 
         const stopDist = (C * C / this.accel) * (gamma - 1);
+        const safetyMargin = 1.5;
 
-        if (absDist < 1000 && v < 100) {
+        if (absDist < 1e5 && v < 50) {
             this.ship.setThrust(0, 1);
+            this.phase = 'arrived';
             this.engaged = false;
             return;
         }
 
-        if (stopDist >= absDist * 0.9) {
+        if (stopDist * safetyMargin >= absDist) {
+            this.phase = 'brake';
             const brakeDir = -Math.sign(this.ship.velocity) || -dir;
             this.ship.setThrust(this.accel, brakeDir);
         } else {
+            this.phase = 'accel';
             this.ship.setThrust(this.accel, dir);
         }
     }

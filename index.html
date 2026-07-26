@@ -90,6 +90,39 @@ button.braking { border-color: #ff6644; color: #ff6644; }
     background: #4488cc;
     transition: width 0.3s;
 }
+#log-panel {
+    flex-shrink: 0;
+    background: #111;
+    border-top: 1px solid #2a2a4a;
+    max-height: 25vh;
+    display: flex;
+    flex-direction: column;
+}
+#log-panel.hidden #log-content { display: none; }
+#log-panel.hidden { max-height: none; }
+#log-header {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 8px;
+    background: #1a1a2e;
+}
+#log-header h3 {
+    font-size: 9px;
+    color: #4488cc;
+    letter-spacing: 1px;
+    flex: 1;
+}
+#log-content {
+    font-size: 10px;
+    line-height: 1.4;
+    padding: 4px 8px;
+    overflow-y: auto;
+    flex: 1;
+    color: #8f8;
+    white-space: pre-wrap;
+    word-break: break-all;
+}
 </style>
 </head>
 <body>
@@ -159,6 +192,16 @@ button.braking { border-color: #ff6644; color: #ff6644; }
         <div id="time-value">1x</div>
         <button id="reset-btn">RESET</button>
     </div>
+</div>
+
+<div id="log-panel">
+    <div id="log-header">
+        <h3>FLIGHT LOG</h3>
+        <button id="log-copy">COPY</button>
+        <button id="log-snap">SNAPSHOT</button>
+        <button id="log-toggle">HIDE</button>
+    </div>
+    <pre id="log-content"></pre>
 </div>
 
 <script type="module" src="js/main.js"></script>
