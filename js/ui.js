@@ -7,6 +7,7 @@ export class UI {
         this.timeScale = 1;
         this.selectedDest = null;
         this.onReset = null;
+        this.onManualThrust = null;
         this.log = null;
         this.init();
     }
@@ -20,7 +21,8 @@ export class UI {
             const gVal = parseFloat(thrustSlider.value);
             this.ship.thrustLevel = gVal * g0;
             thrustVal.textContent = gVal.toFixed(1) + 'g';
-            if (this.log) this.log.logUI(`Thrust set to ${gVal.toFixed(1)}g`);
+            if (this.log) this.log.logUI(`Thrust set to ${gVal.toFixed(1)}g (manual)`);
+            if (this.onManualThrust) this.onManualThrust();
         });
 
         const dirBtn = document.getElementById('dir-btn');
@@ -29,7 +31,8 @@ export class UI {
             const label = this.ship.thrustDirection > 0 ? 'ACCEL ▶' : '◀ BRAKE';
             dirBtn.textContent = label;
             dirBtn.classList.toggle('braking', this.ship.thrustDirection < 0);
-            if (this.log) this.log.logUI(`Direction: ${label}`);
+            if (this.log) this.log.logUI(`Direction: ${label} (manual)`);
+            if (this.onManualThrust) this.onManualThrust();
         });
 
         const timeSlider = document.getElementById('time-slider');
@@ -68,6 +71,15 @@ export class UI {
     }
 
     getTimeScale() { return this.timeScale; }
+
+    updateThrustDisplay() {
+        const gVal = this.ship.thrustLevel / g0;
+        document.getElementById('thrust-slider').value = gVal;
+        document.getElementById('thrust-value').textContent = gVal.toFixed(1) + 'g';
+        const dirBtn = document.getElementById('dir-btn');
+        dirBtn.textContent = this.ship.thrustDirection > 0 ? 'ACCEL ▶' : '◀ BRAKE';
+        dirBtn.classList.toggle('braking', this.ship.thrustDirection < 0);
+    }
 
     update(ship) {
         const spd = Math.abs(ship.velocity);

@@ -17,13 +17,22 @@ ui.setLog(log);
 
 let paused = false;
 
-log.add('[0s] Ship initialized in LEO — 400km above Earth');
+ui.onManualThrust = () => {
+    if (autopilot.engaged) {
+        autopilot.disengage();
+        document.getElementById('ap-btn').textContent = 'AUTOPILOT';
+        document.getElementById('ap-btn').classList.remove('ap-on');
+        log.logUI('Autopilot auto-disengaged (manual thrust override)');
+    }
+};
+
+log.add('[0s] VORTEX PANIC v4 — Ship initialized in LEO — 400km above Earth');
 
 ui.onReset = () => {
     ship.reset();
     autopilot.disengage();
     log.clear();
-    log.add('[0s] Ship reset to LEO');
+    log.add('[0s] VORTEX PANIC v4 — Ship reset to LEO');
     document.getElementById('ap-btn').textContent = 'AUTOPILOT';
     paused = false;
     document.getElementById('pause-btn').textContent = '⏸ PAUSE';
@@ -76,12 +85,16 @@ document.getElementById('ap-btn').addEventListener('click', () => {
     if (autopilot.engaged) {
         autopilot.disengage();
         document.getElementById('ap-btn').textContent = 'AUTOPILOT';
+        document.getElementById('ap-btn').classList.remove('ap-on');
         log.logUI('Autopilot disengaged');
     } else if (ui.selectedDest) {
         autopilot.setTarget(ui.selectedDest);
         autopilot.engage();
-        document.getElementById('ap-btn').textContent = 'DISENGAGE';
+        document.getElementById('ap-btn').textContent = '⚡ DISENGAGE';
+        document.getElementById('ap-btn').classList.add('ap-on');
         log.logUI(`Autopilot engaged → ${ui.selectedDest.name}`);
+    } else {
+        log.logUI('Autopilot FAILED — no destination selected!');
     }
 });
 
@@ -110,6 +123,7 @@ function loop(timestamp) {
         }
     }
 
+    if (autopilot.engaged) ui.updateThrustDisplay();
     renderer.render(ship, BODIES, paused);
     ui.update(ship);
     log.update(ship, autopilot, BODIES);
