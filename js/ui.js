@@ -7,8 +7,11 @@ export class UI {
         this.timeScale = 1;
         this.selectedDest = null;
         this.onReset = null;
+        this.log = null;
         this.init();
     }
+
+    setLog(log) { this.log = log; }
 
     init() {
         const thrustSlider = document.getElementById('thrust-slider');
@@ -17,13 +20,16 @@ export class UI {
             const gVal = parseFloat(thrustSlider.value);
             this.ship.thrustLevel = gVal * g0;
             thrustVal.textContent = gVal.toFixed(1) + 'g';
+            if (this.log) this.log.logUI(`Thrust set to ${gVal.toFixed(1)}g`);
         });
 
         const dirBtn = document.getElementById('dir-btn');
         dirBtn.addEventListener('click', () => {
             this.ship.thrustDirection *= -1;
-            dirBtn.textContent = this.ship.thrustDirection > 0 ? 'ACCEL ▶' : '◀ BRAKE';
+            const label = this.ship.thrustDirection > 0 ? 'ACCEL ▶' : '◀ BRAKE';
+            dirBtn.textContent = label;
             dirBtn.classList.toggle('braking', this.ship.thrustDirection < 0);
+            if (this.log) this.log.logUI(`Direction: ${label}`);
         });
 
         const timeSlider = document.getElementById('time-slider');
@@ -32,6 +38,7 @@ export class UI {
             const exp = parseFloat(timeSlider.value);
             this.timeScale = Math.pow(10, exp);
             timeVal.textContent = this.fmtScale(this.timeScale);
+            if (this.log) this.log.logUI(`TimeScale: ${this.fmtScale(this.timeScale)}`);
         });
 
         const dest = document.getElementById('destinations');
@@ -41,13 +48,17 @@ export class UI {
             radio.type = 'radio';
             radio.name = 'dest';
             radio.value = body.name;
-            radio.addEventListener('change', () => { this.selectedDest = body; });
+            radio.addEventListener('change', () => {
+                this.selectedDest = body;
+                if (this.log) this.log.logUI(`Destination: ${body.name}`);
+            });
             lbl.appendChild(radio);
             lbl.appendChild(document.createTextNode(' ' + body.name));
             dest.appendChild(lbl);
         }
 
         document.getElementById('reset-btn').addEventListener('click', () => {
+            if (this.log) this.log.logUI('RESET');
             if (this.onReset) this.onReset();
             thrustSlider.value = 0;
             thrustVal.textContent = '0.0g';

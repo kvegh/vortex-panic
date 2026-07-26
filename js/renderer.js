@@ -1,5 +1,11 @@
 import { LY, AU } from './constants.js';
 
+const TEXTURES = {
+    'Earth':     'img/earth.jpg',
+    'Moon':      'img/moon.jpg',
+    'Sun':       'img/sun.jpg',
+};
+
 export class Renderer {
     constructor(canvas) {
         this.canvas = canvas;
@@ -17,8 +23,18 @@ export class Renderer {
                 s: Math.random() * 1.5 + 0.5,
             });
         }
+        this.images = {};
+        this.loadTextures();
         this.resize();
         window.addEventListener('resize', () => this.resize());
+    }
+
+    loadTextures() {
+        for (const [name, src] of Object.entries(TEXTURES)) {
+            const img = new Image();
+            img.src = src;
+            this.images[name] = img;
+        }
     }
 
     resize() {
@@ -45,7 +61,7 @@ export class Renderer {
         return Math.max(3, Math.min(angular * this.canvas.height * 0.3, this.canvas.height * 0.4));
     }
 
-    render(ship, bodies) {
+    render(ship, bodies, paused) {
         const ctx = this.ctx;
         const w = this.canvas.width;
         const h = this.canvas.height;
@@ -95,17 +111,7 @@ export class Renderer {
             const nearest = g.items.reduce((a, b) => a.dist < b.dist ? a : b);
             const r = this.bodyScreenRadius(nearest.body.radius, nearest.dist);
 
-            if (r > 10) {
-                const grad = ctx.createRadialGradient(g.sx, this.shipScreenY, 0, g.sx, this.shipScreenY, r);
-                grad.addColorStop(0, nearest.body.color);
-                grad.addColorStop(1, 'transparent');
-                ctx.fillStyle = grad;
-            } else {
-                ctx.fillStyle = nearest.body.color;
-            }
-            ctx.beginPath();
-            ctx.arc(g.sx, this.shipScreenY, r, 0, Math.PI * 2);
-            ctx.fill();
+            this.drawBody(ctx, g.sx, this.shipScreenY, r, nearest.body);
 
             ctx.fillStyle = '#ffffff';
             ctx.font = '11px monospace';
@@ -121,6 +127,44 @@ export class Renderer {
         this.drawArrows(ctx, leftArrows, true, h);
         this.drawArrows(ctx, rightArrows, false, h);
         this.drawShip(ctx, ship);
+
+        if (paused) {
+            ctx.fillStyle = 'rgba(0,0,0,0.3)';
+            ctx.fillRect(0, 0, w, h);
+            ctx.fillStyle = '#4488cc';
+            ctx.font = 'bold 24px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('PAUSED', w / 2, h / 2);
+        }
+    }
+
+    drawBody(ctx, x, y, r, body) {
+        const img = this.images[body.name];
+        if (img && img.complete && img.naturalWidth > 0 && r >= 5) {
+            ctx.save();
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.closePath();
+            ctx.clip();
+            const srcSize = Math.min(img.naturalWidth, img.naturalHeight);
+            const srcX = (img.naturalWidth - srcSize) / 2;
+            const srcY = (img.naturalHeight - srcSize) / 2;
+            ctx.drawImage(img, srcX, srcY, srcSize, srcSize, x - r, y - r, r * 2, r * 2);
+            ctx.restore();
+        } else {
+            if (r > 10) {
+                const grad = ctx.createRadialGradient(x, y, 0, x, y, r);
+                grad.addColorStop(0, body.color);
+                grad.addColorStop(0.7, body.color);
+                grad.addColorStop(1, 'transparent');
+                ctx.fillStyle = grad;
+            } else {
+                ctx.fillStyle = body.color;
+            }
+            ctx.beginPath();
+            ctx.arc(x, y, r, 0, Math.PI * 2);
+            ctx.fill();
+        }
     }
 
     drawArrows(ctx, groups, isLeft, h) {
