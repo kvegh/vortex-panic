@@ -128,13 +128,6 @@ export class Renderer {
         this.drawArrows(ctx, rightArrows, false, h);
         this.drawShip(ctx, ship);
 
-        const g0 = 9.80665;
-        const gForce = ship.thrustLevel / g0;
-        ctx.fillStyle = 'rgba(136,153,170,0.7)';
-        ctx.font = '11px monospace';
-        ctx.textAlign = 'left';
-        ctx.fillText('G = ' + gForce.toFixed(1), 8, 14);
-
         if (paused) {
             ctx.fillStyle = 'rgba(0,0,0,0.3)';
             ctx.fillRect(0, 0, w, h);

@@ -112,6 +112,7 @@ export class UI {
         const dil = ship.coordinateTime > 1 ? (ship.coordinateTime / ship.properTime) : 1;
         document.getElementById('dilation').textContent = dil.toFixed(3) + 'x';
 
+        document.getElementById('accel').textContent = (ship.thrustLevel / g0).toFixed(1);
         document.getElementById('fuel').textContent = (ship.fuelFraction * 100).toFixed(1) + '%';
         const fuelBar = document.getElementById('fuel-bar');
         fuelBar.style.width = (ship.fuelFraction * 100) + '%';
