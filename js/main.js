@@ -17,7 +17,7 @@ ui.setLog(log);
 
 let paused = false;
 
-log.add('[0s] VORTEX PANIC v4 — Ship initialized in LEO — 400km above Earth');
+log.add('[0s] VORTEX PANIC v4 — Ship on Earth surface');
 
 ui.onReset = () => {
     ship.reset();
