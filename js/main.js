@@ -104,6 +104,20 @@ document.getElementById('step-back').addEventListener('click', () => {
     stepToPercent(target);
 });
 
+document.getElementById('step-fwd-1').addEventListener('click', () => {
+    const traveled = Math.abs(ship.position - autopilot.startPos);
+    const pct = autopilot.totalDist > 0 ? (traveled / autopilot.totalDist) * 100 : 0;
+    const target = Math.min(100, Math.ceil(pct + 0.001));
+    stepToPercent(target);
+});
+
+document.getElementById('step-back-1').addEventListener('click', () => {
+    const traveled = Math.abs(ship.position - autopilot.startPos);
+    const pct = autopilot.totalDist > 0 ? (traveled / autopilot.totalDist) * 100 : 0;
+    const target = Math.max(0, Math.floor(pct - 0.001) - 1);
+    stepToPercent(target);
+});
+
 document.getElementById('log-copy').addEventListener('click', () => {
     const text = log.snapshot(ship, autopilot);
     navigator.clipboard.writeText(text).then(() => {
