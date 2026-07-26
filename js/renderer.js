@@ -230,6 +230,13 @@ export class Renderer {
         ctx.strokeStyle = '#ffffff';
         ctx.lineWidth = 1;
         ctx.stroke();
+
+        if (ship.parked) {
+            ctx.fillStyle = '#44ff88';
+            ctx.font = '10px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('Parked in stable orbit', x, y - 16);
+        }
     }
 
     setZoom(ppd) {
