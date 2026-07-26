@@ -11,8 +11,9 @@ export class Autopilot {
 
     setTarget(body) { this.target = body; }
 
-    engage() {
+    engage(accel) {
         if (this.target) {
+            if (accel) this.accel = accel;
             this.engaged = true;
             this.phase = 'accel';
         }

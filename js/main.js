@@ -83,11 +83,11 @@ document.getElementById('ap-btn').addEventListener('click', () => {
         log.logUI('Autopilot disengaged');
     } else if (ui.selectedDest) {
         autopilot.setTarget(ui.selectedDest);
-        autopilot.engage();
+        autopilot.engage(ui.apThrustG * 9.80665);
         document.getElementById('ap-btn').textContent = '⚡ DISENGAGE';
         document.getElementById('ap-btn').classList.add('ap-on');
         ui.disableManualControls();
-        log.logUI(`Autopilot engaged → ${ui.selectedDest.name}`);
+        log.logUI(`Autopilot engaged → ${ui.selectedDest.name} at ${ui.apThrustG}g`);
     } else {
         log.logUI('Autopilot FAILED — no destination selected!');
     }

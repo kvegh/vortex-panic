@@ -50,6 +50,14 @@ export class UI {
             if (this.log) this.log.logUI(`TimeScale: ${this.fmtScale(this.timeScale)}`);
         });
 
+        this.apThrustG = 55;
+        for (const radio of document.querySelectorAll('input[name="apthrust"]')) {
+            radio.addEventListener('change', () => {
+                this.apThrustG = parseFloat(radio.value);
+                if (this.log) this.log.logUI(`AP thrust: ${this.apThrustG}g`);
+            });
+        }
+
         const dest = document.getElementById('destinations');
         for (const body of BODIES) {
             const lbl = document.createElement('label');

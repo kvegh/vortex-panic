@@ -191,6 +191,12 @@ button.ap-on { border-color: #44ff88; color: #44ff88; background: #1a3a2e; }
     <div class="sec" style="min-width:260px;flex:2">
         <h3>DESTINATION</h3>
         <div id="destinations"></div>
+        <h3 style="margin-top:4px">AP THRUST</h3>
+        <div id="ap-thrust-modes" style="display:flex;gap:8px;font-size:10px">
+            <label><input type="radio" name="apthrust" value="1.5"> Human 1.5g</label>
+            <label><input type="radio" name="apthrust" value="55" checked> Unmanned 55g</label>
+            <label><input type="radio" name="apthrust" value="500"> Fantasy 500g</label>
+        </div>
         <button id="ap-btn">AUTOPILOT</button>
     </div>
 
