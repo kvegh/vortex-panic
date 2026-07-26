@@ -17,7 +17,7 @@ ui.setLog(log);
 
 let paused = false;
 
-log.add('[0s] VORTEX PANIC v4 — Ship on Earth surface');
+log.add('[0s] VORTEX PANIC v4 — Parked on Earth surface');
 
 ui.onReset = () => {
     ship.reset();

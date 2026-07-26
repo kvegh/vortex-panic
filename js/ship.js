@@ -20,11 +20,13 @@ export class Ship {
         this.thrustLevel = 0;
         this.thrustDirection = 1;
         this.gamma = 1;
+        this.parked = true;
     }
 
     setThrust(level, direction) {
         this.thrustLevel = level;
         this.thrustDirection = direction;
+        if (level > 0) this.parked = false;
     }
 
     get fuelFraction() {
@@ -47,7 +49,7 @@ export class Ship {
             this.mass = Math.max(this.dryMass, this.mass - dm);
         }
 
-        const gravAccel = gravitationalAccel(this.position, bodies);
+        const gravAccel = this.parked ? 0 : gravitationalAccel(this.position, bodies);
         this.velocity += (thrustAccel + gravAccel) * dt;
 
         const maxV = C * 0.9999999;

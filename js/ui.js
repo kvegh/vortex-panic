@@ -20,6 +20,7 @@ export class UI {
         thrustSlider.addEventListener('input', () => {
             const gVal = parseFloat(thrustSlider.value);
             this.ship.thrustLevel = gVal * g0;
+            if (gVal > 0) this.ship.parked = false;
             thrustVal.textContent = gVal.toFixed(1) + 'g';
             if (this.onManualThrust) this.onManualThrust();
         });

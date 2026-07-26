@@ -36,6 +36,7 @@ export class Autopilot {
         if (absDist < 1e6 && v < 1000) {
             this.ship.setThrust(0, 1);
             this.ship.velocity = 0;
+            this.ship.parked = true;
             this.phase = 'arrived';
             this.engaged = false;
             return;
