@@ -22,7 +22,7 @@ export const BODIES = [
 export const SHIP_DEFAULTS = {
     position: 6.371e6,
     velocity: 0,
-    totalMass: 1e7,
-    fuelFraction: 0.9,
+    totalMass: 10.1e6,
+    fuelFraction: 10000 / 10100,
     exhaustVelocity: 0.1 * C,
 };
