@@ -18,13 +18,13 @@ ui.setLog(log);
 
 let paused = false;
 
-log.add('[0s] VORTEX PANIC v9 — Parked on Earth surface');
+log.add('[0s] VORTEX PANIC v10 — Parked on Earth surface');
 
 ui.onReset = () => {
     ship.reset();
     autopilot.disengage();
     log.clear();
-    log.add('[0s] VORTEX PANIC v9 — Parked on Earth surface');
+    log.add('[0s] VORTEX PANIC v10 — Parked on Earth surface');
     document.getElementById('ap-btn').textContent = 'AUTOPILOT';
     document.getElementById('ap-btn').classList.remove('ap-on');
     paused = false;
@@ -85,7 +85,7 @@ function stepToPercent(targetPct) {
         paused = true;
         document.getElementById('pause-btn').textContent = '▶ RESUME';
     }
-    renderer.render(ship, BODIES, paused);
+    renderer.render(ship, BODIES, paused, autopilot);
     ui.update(ship);
     log.logUI(`STEP → ${targetPct}%`);
 }
@@ -171,7 +171,7 @@ function loop(timestamp) {
         document.getElementById('ap-btn').classList.remove('ap-on');
         autopilot.phase = '';
     }
-    renderer.render(ship, BODIES, paused);
+    renderer.render(ship, BODIES, paused, autopilot);
     ui.update(ship);
     log.update(ship, autopilot, BODIES);
     requestAnimationFrame(loop);

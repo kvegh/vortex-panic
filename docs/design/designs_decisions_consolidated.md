@@ -163,18 +163,50 @@ Autopilot plans symmetric flights with midpoint flip. Four phases: accel, brake,
 
 ---
 
-## Current State (v8)
+## v9 — Speed Display Fix, Step Milestone Fix, Button Logging
+
+### Decisions
+
+1. **Speed display clamped below c**: at ultra-relativistic speeds, `toFixed(6)` rounded 0.9999995+c to "1.000000 c" — looked like the ship reached lightspeed. Display now clamped to 0.999999c (6dp) and 0.999999999c (9dp snapshot). Velocity in the analytical function clamped to 0.9999999c, matching `ship.update()`.
+2. **Snapshot km/s clamped below c**: `toFixed(1)` rounded 299792.458 to "299792.5 km/s" — numerically above c. Now clamped before formatting.
+3. **Speed milestones no longer re-trigger on step**: `stepToPercent()` was resetting `lastSpeedBracket = -1`, causing "MILESTONE: 99%c" to fire on every step. Now computes the correct bracket from current velocity.
+4. **Log-toggle button logged**: HIDE/SHOW clicks now recorded in the flight log. All button clicks are now logged.
+5. **Step back jumps 2 boundaries**: stepping back from 93% now goes to 80% instead of 90%. The nearest boundary was too close to feel like movement.
+6. **Flame size fixed per preset**: replaced `10 + g * 4` (1010px at 250g) with a lookup — 1g: 10px, 2g: 20px, 55g: 100px, 250g: 200px.
+
+### Design changes
+
+Speed display never shows ≥1c anywhere. All button clicks logged. Step-back skips one extra boundary. Flame sizes fixed per thrust preset.
+
+---
+
+## v10 — Ship Image, Phase Text, Deceleration Flip
+
+### Decisions
+
+1. **Ship image replaces triangle**: `img/ship_creativecommons.png` loaded as a texture and drawn at 35px wide (proportional height). Nose points left by default (matching flight direction). Triangle kept as fallback if image fails to load.
+2. **Ship flips on deceleration**: during brake/correct phases, the ship image is flipped horizontally so the nose points right (engines face the direction of travel, physically correct for a decelerating rocket).
+3. **Phase text above ship**: "ACCELERATING" shown in green (#44ff88) during accel phase. "DECELERATING" shown in orange (#ff8844) during brake/correct phases. "Parked in stable orbit" in green when parked. No text during arrived or idle.
+4. **Renderer receives autopilot**: `render()` now takes an autopilot parameter to determine flight phase for ship orientation and text display.
+
+### Design changes
+
+Ship rendered as a rocket image instead of a plain triangle. Flips on deceleration. Phase label floats above the ship during flight. Flame positions adjusted for wider ship sprite.
+
+---
+
+## Current State (v10)
 
 ### Architecture
 ```
 index.html              — canvas + UI control panel + flight log
-img/                    — Earth, Moon, Sun textures (CC BY 4.0)
+img/                    — Earth, Moon, Sun textures (CC BY 4.0), ship sprite
 js/
   constants.js          — C, G, AU, LY, g0, BODIES[], SHIP_DEFAULTS
   physics.js            — pure math: Lorentz, accel, gravity, fuel, round-trip, analytical flight state
   ship.js               — Ship class with setState() for bulk writes
   autopilot.js          — midpoint flight planner with 0.1% correction zone
-  renderer.js           — canvas rendering with textures, log zoom, arrows
+  renderer.js           — canvas rendering with textures, ship sprite, log zoom, arrows
   ui.js                 — HTML controls, formatting, all UI event logging
   flightlog.js          — timestamped log with speed/progress milestones
   main.js               — game loop, 10% step buttons, event wiring
@@ -182,10 +214,10 @@ docs/design/            — this file (consolidated design & decision history)
 ```
 
 ### Flight profile
-Symmetric accel/decel with midpoint flip. Four phases: ACCELERATING → BRAKING → FINAL APPROACH → ARRIVED. Analytical state available at any journey fraction.
+Symmetric accel/decel with midpoint flip. Four phases: ACCELERATING → BRAKING → FINAL APPROACH → ARRIVED. Analytical state available at any journey fraction. Ship sprite flips on deceleration, phase text shown above ship.
 
 ### Visual
-Dark navy (#0a0a1a) background, #4488cc headers, #ffffff subtitle, #8f8 log text. Textured bodies (Earth, Moon, Sun), clustering at <20px, PAUSED overlay, fuel visual bar. Canvas maximized (panel ≤35vh, log 4 lines).
+Dark navy (#0a0a1a) background, #4488cc headers, #ffffff subtitle, #8f8 log text. Ship rendered as rocket sprite (flips on decel). Textured bodies (Earth, Moon, Sun), clustering at <20px, PAUSED overlay, fuel visual bar. Canvas maximized (panel ≤35vh, log 4 lines). Flame sizes fixed per thrust preset (10/20/100/200px).
 
 ### Controls
 Autopilot-only. 4 thrust presets (1g/2g/55g/250g). 10 time scale steps (1x–100Mx). 10% step ahead/back buttons. Pause/Reset.

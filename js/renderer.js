@@ -35,6 +35,8 @@ export class Renderer {
             img.src = src;
             this.images[name] = img;
         }
+        this.shipImg = new Image();
+        this.shipImg.src = 'img/ship_creativecommons.png';
     }
 
     resize() {
@@ -61,7 +63,7 @@ export class Renderer {
         return Math.max(3, Math.min(angular * this.canvas.height * 0.3, this.canvas.height * 0.4));
     }
 
-    render(ship, bodies, paused) {
+    render(ship, bodies, paused, autopilot) {
         const ctx = this.ctx;
         const w = this.canvas.width;
         const h = this.canvas.height;
@@ -126,7 +128,7 @@ export class Renderer {
 
         this.drawArrows(ctx, leftArrows, true, h);
         this.drawArrows(ctx, rightArrows, false, h);
-        this.drawShip(ctx, ship);
+        this.drawShip(ctx, ship, autopilot);
 
         if (paused) {
             ctx.fillStyle = 'rgba(0,0,0,0.3)';
@@ -196,18 +198,21 @@ export class Renderer {
         }
     }
 
-    drawShip(ctx, ship) {
+    drawShip(ctx, ship, autopilot) {
         const x = this.shipScreenX;
         const y = this.shipScreenY;
         const g0 = 9.80665;
+        const phase = autopilot ? autopilot.phase : '';
+        const isBraking = phase === 'brake' || phase === 'correct';
 
         if (ship.thrustLevel > 0 && ship.hasFuel) {
-            const len = 10 + (ship.thrustLevel / g0) * 4;
+            const flameLen = {1: 10, 2: 20, 55: 100, 250: 200};
+            const len = flameLen[Math.round(ship.thrustLevel / g0)] || 50;
             let bx, tx;
             if (ship.thrustDirection > 0) {
-                bx = x + 10; tx = bx + len;
+                bx = x + 18; tx = bx + len;
             } else {
-                bx = x - 15; tx = bx - len;
+                bx = x - 18; tx = bx - len;
             }
             ctx.fillStyle = '#ff6600';
             ctx.globalAlpha = 0.5 + Math.random() * 0.4;
@@ -220,18 +225,45 @@ export class Renderer {
             ctx.globalAlpha = 1;
         }
 
-        ctx.fillStyle = '#cccccc';
-        ctx.beginPath();
-        ctx.moveTo(x - 15, y);
-        ctx.lineTo(x + 10, y - 8);
-        ctx.lineTo(x + 10, y + 8);
-        ctx.closePath();
-        ctx.fill();
-        ctx.strokeStyle = '#ffffff';
-        ctx.lineWidth = 1;
-        ctx.stroke();
+        const img = this.shipImg;
+        if (img && img.complete && img.naturalWidth > 0) {
+            const shipW = 35;
+            const shipH = shipW * (img.naturalHeight / img.naturalWidth);
+            ctx.save();
+            ctx.translate(x, y);
+            if (isBraking) ctx.scale(-1, 1);
+            ctx.drawImage(img, -shipW / 2, -shipH / 2, shipW, shipH);
+            ctx.restore();
+        } else {
+            ctx.fillStyle = '#cccccc';
+            ctx.beginPath();
+            if (isBraking) {
+                ctx.moveTo(x + 15, y);
+                ctx.lineTo(x - 10, y - 8);
+                ctx.lineTo(x - 10, y + 8);
+            } else {
+                ctx.moveTo(x - 15, y);
+                ctx.lineTo(x + 10, y - 8);
+                ctx.lineTo(x + 10, y + 8);
+            }
+            ctx.closePath();
+            ctx.fill();
+            ctx.strokeStyle = '#ffffff';
+            ctx.lineWidth = 1;
+            ctx.stroke();
+        }
 
-        if (ship.parked) {
+        if (phase === 'accel') {
+            ctx.fillStyle = '#44ff88';
+            ctx.font = '10px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('ACCELERATING', x, y - 20);
+        } else if (isBraking) {
+            ctx.fillStyle = '#ff8844';
+            ctx.font = '10px monospace';
+            ctx.textAlign = 'center';
+            ctx.fillText('DECELERATING', x, y - 20);
+        } else if (ship.parked) {
             ctx.fillStyle = '#44ff88';
             ctx.font = '10px monospace';
             ctx.textAlign = 'center';
