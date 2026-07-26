@@ -259,3 +259,17 @@ Autopilot-only. 4 thrust presets (1g/2g/55g/250g). 10 time scale steps (1x–100
 | Andromeda | ~2.5M ly |
 | Supercluster edge | ~100M ly |
 | Observable Universe edge | ~46.5B ly |
+
+### Ship
+
+10,000t fuel + 150t dry mass (payload/structure). Mass ratio 67:1. Exhaust velocity 0.1c (fictional). Max one-way Δv ≈ 0.42c.
+
+---
+
+## Planned Features (TODO)
+
+### Jupiter and Saturn as landmarks
+Add Jupiter (~5.2 AU) and Saturn (~9.5 AU) between Sun and Pluto. Need CC-licensed texture images (existing textures from Solar System Scope CC BY 4.0) or use colored gradient fallback initially.
+
+### Gravity assist (slingshot) mechanic
+When the ship passes near Jupiter or Saturn, apply a passive velocity boost: +10 km/s for Jupiter, +5 km/s for Saturn. Log as "GRAVITY ASSIST: Jupiter +10.0 km/s". These delta-v values match real Voyager mission data. Separate from autopilot — a passive event triggered by proximity. Venus slingshot ruled out since the ship only flies outward from Earth.
