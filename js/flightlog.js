@@ -10,6 +10,8 @@ export class FlightLog {
         this.loggedBodies = new Set();
         this.frameCount = 0;
         this.ship = null;
+        this.lastProgressMilestone = -1;
+        this.lastFlightStart = null;
     }
 
     setShip(ship) { this.ship = ship; }
@@ -82,7 +84,7 @@ export class FlightLog {
         }
 
         if (autopilot.phase !== this.lastPhase && autopilot.phase) {
-            const phaseLabels = { accel: 'ACCELERATING', brake: 'BRAKING', arrived: 'ARRIVED' };
+            const phaseLabels = { accel: 'ACCELERATING', brake: 'BRAKING', correct: 'FINAL APPROACH', arrived: 'ARRIVED' };
             const label = phaseLabels[autopilot.phase] || autopilot.phase;
             const target = autopilot.target ? autopilot.target.name : '?';
             const targetDist = autopilot.target ? this.fmtDist(Math.abs(autopilot.target.position - pos)) : '?';
@@ -102,6 +104,23 @@ export class FlightLog {
                     this.add(`[${t}] PASSED: ${body.name} now ${this.fmtDist(dist)} behind @${this.fmtDist(pos)}`);
                     this.loggedBodies.add(key + '_passed');
                 }
+            }
+        }
+
+        if (autopilot.engaged && autopilot.totalDist > 0) {
+            if (this.lastFlightStart !== autopilot.startPos) {
+                this.lastFlightStart = autopilot.startPos;
+                this.lastProgressMilestone = -1;
+            }
+            const traveled = Math.abs(pos - autopilot.startPos);
+            const progressBracket = Math.floor(traveled / autopilot.totalDist * 10);
+            if (progressBracket > this.lastProgressMilestone && progressBracket <= 10) {
+                const pct = progressBracket * 10;
+                const distTarget = autopilot.target ? Math.abs(autopilot.target.position - pos) : 0;
+                const dil = ship.coordinateTime > 1 ? (ship.coordinateTime / ship.properTime).toFixed(3) : '1.000';
+                const targetName = autopilot.target ? autopilot.target.name : '?';
+                this.add(`[${t}] ▸ ${pct}% — v=${v.toFixed(6)}c γ=${ship.gamma.toFixed(4)} G=${(ship.thrustLevel/g0).toFixed(1)} Fuel=${(ship.fuelFraction*100).toFixed(1)}% | Ship=${this.fmtTime(ship.properTime)} Earth=${this.fmtTime(ship.coordinateTime)} Dil=${dil}x | To ${targetName}: ${this.fmtDist(distTarget)}`);
+                this.lastProgressMilestone = progressBracket;
             }
         }
 
@@ -140,6 +159,8 @@ export class FlightLog {
         this.lastPhase = '';
         this.lastSpeedBracket = -1;
         this.loggedBodies = new Set();
+        this.lastProgressMilestone = -1;
+        this.lastFlightStart = null;
         if (this.el) this.el.textContent = '';
     }
 }

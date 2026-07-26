@@ -7,6 +7,8 @@ export class Autopilot {
         this.engaged = false;
         this.accel = 1 * g0;
         this.phase = '';
+        this.startPos = 0;
+        this.totalDist = 0;
     }
 
     setTarget(body) { this.target = body; }
@@ -16,6 +18,8 @@ export class Autopilot {
             if (accel) this.accel = accel;
             this.engaged = true;
             this.phase = 'accel';
+            this.startPos = this.ship.position;
+            this.totalDist = Math.abs(this.target.position - this.ship.position);
         }
     }
 
@@ -43,16 +47,27 @@ export class Autopilot {
             return;
         }
 
-        const stopDist = (C * C / this.accel) * (gamma - 1);
-        const safetyMargin = 1.5;
+        const correctionDist = this.totalDist * 0.001;
 
-        if (stopDist * safetyMargin >= absDist) {
-            this.phase = 'brake';
-            const brakeDir = -Math.sign(this.ship.velocity) || -dir;
-            this.ship.setThrust(this.accel, brakeDir);
+        if (absDist <= correctionDist) {
+            this.phase = 'correct';
+            const stopDist = (C * C / this.accel) * (gamma - 1);
+            if (stopDist >= absDist) {
+                const brakeDir = -Math.sign(this.ship.velocity) || -dir;
+                this.ship.setThrust(this.accel, brakeDir);
+            } else {
+                this.ship.setThrust(this.accel, dir);
+            }
         } else {
-            this.phase = 'accel';
-            this.ship.setThrust(this.accel, dir);
+            const traveled = Math.abs(this.ship.position - this.startPos);
+            if (traveled < this.totalDist / 2) {
+                this.phase = 'accel';
+                this.ship.setThrust(this.accel, dir);
+            } else {
+                this.phase = 'brake';
+                const brakeDir = -Math.sign(this.ship.velocity) || -dir;
+                this.ship.setThrust(this.accel, brakeDir);
+            }
         }
     }
 }
