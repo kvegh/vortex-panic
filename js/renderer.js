@@ -1,9 +1,17 @@
 import { LY, AU } from './constants.js';
 
 const TEXTURES = {
-    'Earth':     'img/earth.jpg',
-    'Moon':      'img/moon.jpg',
-    'Sun':       'img/sun.jpg',
+    'Earth':        'img/earth.jpg',
+    'Moon':         'img/moon.jpg',
+    'Sun':          'img/sun.jpg',
+    'Pluto':        'img/pluto.jpg',
+    'Voyager 1':    'img/voyager.jpg',
+    'α Centauri':   'img/alphacentauri.jpg',
+    'Pillars':      'img/pillars.jpg',
+    'Sgr A*':       'img/sgra.jpg',
+    'Andromeda':    'img/andromeda.jpg',
+    'Supercluster': 'img/supercluster.jpg',
+    'Edge':         'img/edge.jpg',
 };
 
 export class Renderer {
